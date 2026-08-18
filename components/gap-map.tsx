@@ -1,4 +1,11 @@
-import { overallGap, type AreaResult, type Priority } from "@/lib/assessment/scoring";
+import {
+  alignmentBand,
+  alignmentPct,
+  overallGap,
+  type AreaResult,
+  type Priority,
+} from "@/lib/assessment/scoring";
+import RadarChart from "@/components/radar-chart";
 
 const PRIORITY_STYLES: Record<Priority, { label: string; badge: string; ring: string }> = {
   high: {
@@ -107,25 +114,107 @@ export function GapMapCard({ area }: { area: AreaResult }) {
 
 export function GapMap({ areas }: { areas: AreaResult[] }) {
   const avg = overallGap(areas);
-  const highCount = areas.filter((a) => a.priority === "high").length;
   const ffCount = areas.filter((a) => a.fight_flight).length;
+  const pct = alignmentPct(areas);
+  const band = alignmentBand(pct);
+
+  // areas arrive ranked by priority then gap — worst first, best last
+  const priorityGaps = areas.filter((a) => a.priority !== "low").slice(0, 3);
+  const strengths = [...areas]
+    .reverse()
+    .filter((a) => a.priority === "low")
+    .slice(0, 3);
 
   return (
     <div>
-      <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 text-center">
-          <div className="text-2xl font-bold text-purple-700">{avg}</div>
-          <div className="mt-1 text-xs text-neutral-500">Average gap</div>
+      <div className="mb-6 grid gap-4 lg:grid-cols-5">
+        {/* Radar: current vs desired */}
+        <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm lg:col-span-3">
+          <h3 className="text-sm font-semibold text-neutral-900">
+            Current vs desired life
+          </h3>
+          <p className="mt-0.5 text-xs text-neutral-500">
+            The dashed line is the life you want; the filled shape is where you
+            are today.
+          </p>
+          <div className="mx-auto mt-2 max-w-sm">
+            <RadarChart areas={areas} />
+          </div>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 text-center">
-          <div className="text-2xl font-bold text-red-600">{ffCount}</div>
-          <div className="mt-1 text-xs text-neutral-500">Areas in fight/flight</div>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 text-center">
-          <div className="text-2xl font-bold text-amber-600">{highCount}</div>
-          <div className="mt-1 text-xs text-neutral-500">High-priority areas</div>
+
+        {/* Summary: alignment + strengths + priority gaps */}
+        <div className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm lg:col-span-2">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-purple-700 text-lg font-bold text-white">
+              {pct}%
+            </div>
+            <div>
+              <div className="font-semibold text-neutral-900">{band.label}</div>
+              <p className="mt-0.5 text-xs leading-relaxed text-neutral-600">
+                {band.summary}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 border-t border-neutral-100 pt-4 text-center">
+            <div>
+              <div className="text-xl font-bold text-purple-700">{avg}</div>
+              <div className="mt-0.5 text-[11px] text-neutral-500">
+                Average gap
+              </div>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-red-600">{ffCount}</div>
+              <div className="mt-0.5 text-[11px] text-neutral-500">
+                Areas in fight/flight
+              </div>
+            </div>
+          </div>
+
+          {priorityGaps.length > 0 && (
+            <div className="border-t border-neutral-100 pt-4">
+              <h4 className="text-[11px] font-semibold uppercase tracking-wide text-red-700">
+                Priority gaps
+              </h4>
+              <ul className="mt-2 space-y-1.5">
+                {priorityGaps.map((a) => (
+                  <li
+                    key={a.life_area_id}
+                    className="flex items-center justify-between gap-2 text-sm text-neutral-800"
+                  >
+                    <span>{a.life_area_name}</span>
+                    <span className="text-xs font-semibold text-red-600">
+                      +{a.gap_score}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {strengths.length > 0 && (
+            <div className="border-t border-neutral-100 pt-4">
+              <h4 className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                Top strengths
+              </h4>
+              <ul className="mt-2 space-y-1.5">
+                {strengths.map((a) => (
+                  <li
+                    key={a.life_area_id}
+                    className="flex items-center justify-between gap-2 text-sm text-neutral-800"
+                  >
+                    <span>{a.life_area_name}</span>
+                    <span className="text-xs font-semibold text-emerald-600">
+                      +{a.gap_score}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
+
       <div className="grid gap-4 lg:grid-cols-2">
         {areas.map((area) => (
           <GapMapCard key={area.life_area_id} area={area} />
@@ -138,13 +227,9 @@ export function GapMap({ areas }: { areas: AreaResult[] }) {
 export function GapMapSkeleton() {
   return (
     <div>
-      <div className="mb-6 grid grid-cols-3 gap-3">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-20 animate-pulse rounded-xl border border-neutral-200 bg-neutral-100"
-          />
-        ))}
+      <div className="mb-6 grid gap-4 lg:grid-cols-5">
+        <div className="h-80 animate-pulse rounded-xl border border-neutral-200 bg-neutral-100 lg:col-span-3" />
+        <div className="h-80 animate-pulse rounded-xl border border-neutral-200 bg-neutral-100 lg:col-span-2" />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         {[0, 1, 2, 3, 4, 5].map((i) => (

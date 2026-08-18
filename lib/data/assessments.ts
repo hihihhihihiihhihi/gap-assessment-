@@ -58,6 +58,7 @@ export async function getGapMap(
     life_area_id: r.life_area_id,
     life_area_name: r.life_areas?.name ?? "Unknown area",
     life_area_description: r.life_areas?.description ?? null,
+    sort_order: r.life_areas?.sort_order ?? 0,
     current_score: r.current_score,
     desired_score: r.desired_score,
     stress_level: r.stress_level,

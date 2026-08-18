@@ -13,6 +13,7 @@ export interface AreaResult extends AreaScoreInput {
   life_area_id: string;
   life_area_name: string;
   life_area_description: string | null;
+  sort_order: number;
   gap_score: number;
   fight_flight: boolean;
   low_awareness: boolean;
@@ -53,6 +54,44 @@ export function rankAreas<T extends { priority: Priority; gap_score: number }>(
       PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] ||
       b.gap_score - a.gap_score,
   );
+}
+
+/**
+ * How close current life is to the desired one, 0–100.
+ * Per-area ratio current/desired (capped at 1), averaged.
+ */
+export function alignmentPct(
+  areas: { current_score: number; desired_score: number }[],
+): number {
+  if (areas.length === 0) return 0;
+  const sum = areas.reduce(
+    (acc, a) => acc + Math.min(a.current_score / a.desired_score, 1),
+    0,
+  );
+  return Math.round((sum / areas.length) * 100);
+}
+
+export function alignmentBand(pct: number): {
+  label: string;
+  summary: string;
+} {
+  if (pct >= 80)
+    return {
+      label: "High alignment",
+      summary:
+        "You're living close to the life you want — protect what's working.",
+    };
+  if (pct >= 55)
+    return {
+      label: "Medium alignment",
+      summary:
+        "You're closer to balance than most — but key gaps remain in areas that matter.",
+    };
+  return {
+    label: "Low alignment",
+    summary:
+      "There's a wide gap between your life today and the one you want — start with the priority areas below.",
+  };
 }
 
 /** Average of all area gap scores, one decimal. */
