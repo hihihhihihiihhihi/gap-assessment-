@@ -10,6 +10,10 @@
 - `lint`: `next lint`
 - `start`: `next start`
 
+## Decisions
+
+- GapFinder-inspired redesign adopted: results page now includes a radar chart, alignment score, and explicit strengths/gaps sections.
+
 ## Architecture
 
 - Sprint 1 built data layer, scoring engine, responsive shell, and demo Gap Map landing — establishing the core architecture in a single sprint.
