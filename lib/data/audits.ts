@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface Audit {
   id: string;
@@ -11,7 +11,7 @@ export interface Audit {
 const AUDIT_FIELDS = "id, session_token, status, email, completed_at";
 
 export async function createAudit(sessionToken: string): Promise<Audit> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("audits")
     .insert({ session_token: sessionToken })
@@ -27,7 +27,7 @@ export async function createAudit(sessionToken: string): Promise<Audit> {
 export async function getAuditBySession(
   sessionToken: string,
 ): Promise<Audit | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("audits")
     .select(AUDIT_FIELDS)
@@ -40,7 +40,7 @@ export async function getAuditBySession(
 }
 
 export async function getAuditById(id: string): Promise<Audit | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("audits")
     .select(AUDIT_FIELDS)
@@ -51,7 +51,7 @@ export async function getAuditById(id: string): Promise<Audit | null> {
 }
 
 export async function markAuditCompleted(id: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("audits")
     .update({ status: "completed", completed_at: new Date().toISOString() })
@@ -63,7 +63,7 @@ export async function saveAuditEmail(
   id: string,
   email: string,
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("audits")
     .update({ email })

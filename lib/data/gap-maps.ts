@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { GapMapResult, RankedArea } from "@/lib/scoring/gap-calculator";
 
 export interface GapMapRow {
@@ -15,7 +15,7 @@ export async function saveGapMap(
   auditId: string,
   result: GapMapResult,
 ): Promise<GapMapRow> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("gap_maps")
     .upsert(
@@ -37,7 +37,7 @@ export async function saveGapMap(
 export async function getGapMapByAudit(
   auditId: string,
 ): Promise<GapMapRow | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("gap_maps")
     .select(GAP_MAP_FIELDS)
