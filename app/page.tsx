@@ -1,64 +1,92 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { getGapMap, DEMO_ASSESSMENT_ID } from "@/lib/data/assessments";
-import { GapMap, GapMapSkeleton } from "@/components/gap-map";
+import { getGapMapByAudit } from "@/lib/data/gap-maps";
+import GapMapView, { GapMapSkeleton } from "@/components/results/gap-map-view";
 
-export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
+/** Seeded demo audit (supabase/migrations/0001_init.sql) — renders for anonymous visitors. */
+const DEMO_AUDIT_ID = "a0000000-0000-4000-8000-000000000001";
 
 async function DemoGapMap() {
-  const gapMap = await getGapMap(DEMO_ASSESSMENT_ID);
-  if (!gapMap) {
+  try {
+    const gapMap = await getGapMapByAudit(DEMO_AUDIT_ID);
+    if (!gapMap) return null;
     return (
-      <p className="rounded-xl border border-neutral-200 bg-white p-6 text-sm text-neutral-500">
-        Demo data isn&apos;t available right now — but your own Gap Map is one
-        assessment away.
-      </p>
+      <section className="mt-12">
+        <div className="mb-3 flex items-baseline justify-between">
+          <h2 className="text-sm font-semibold text-neutral-900">
+            What a Gap Map looks like
+          </h2>
+          <span className="text-xs text-neutral-400">Sample</span>
+        </div>
+        <GapMapView
+          rankedAreas={gapMap.ranked_areas}
+          totalGap={gapMap.total_gap}
+          compact
+        />
+      </section>
     );
+  } catch {
+    // A sample that won't load must never block the audit itself.
+    return null;
   }
-  return <GapMap areas={gapMap.areas} />;
 }
 
-export default function HomePage() {
-  return (
-    <div className="max-w-4xl">
-      <section className="mb-10">
-        <p className="text-sm font-medium uppercase tracking-wide text-purple-600">
-          For women who lead
-        </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-neutral-900 md:text-4xl">
-          See the gap between the life you have and the life you want
-        </h1>
-        <p className="mt-3 max-w-2xl text-neutral-600">
-          High-achieving women often run in chronic fight-or-flight mode without
-          noticing what it costs. Rate six life areas — career, health,
-          relationships, finances, growth, and purpose — and get a personal Gap
-          Map showing where you&apos;re in survival mode and where awareness is
-          low. No account needed.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Link
-            href="/assessment"
-            className="rounded-lg bg-purple-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-purple-800"
-          >
-            Start Your Assessment
-          </Link>
-          <span className="text-xs text-neutral-500">
-            6 areas · 4 questions each · about 3 minutes
-          </span>
-        </div>
-      </section>
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
 
-      <section>
-        <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Example Gap Map
-          </h2>
-          <span className="text-xs text-neutral-400">Demo data</span>
+  return (
+    <div>
+      {error === "start" && (
+        <div
+          role="alert"
+          className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+        >
+          We couldn&apos;t start your audit just now. Please try again.
         </div>
-        <Suspense fallback={<GapMapSkeleton />}>
-          <DemoGapMap />
-        </Suspense>
-      </section>
+      )}
+
+      <p className="text-xs font-medium uppercase tracking-[0.15em] text-amber-700">
+        The Gap Audit
+      </p>
+      <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight md:text-4xl">
+        You can&apos;t close a gap you can&apos;t see.
+      </h1>
+      <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-neutral-700">
+        <p>
+          From the outside it looks like you&apos;re holding it all together.
+          Inside, a good deal of it runs on fight/flight — and you&apos;ve been
+          moving too fast to notice how much.
+        </p>
+        <p>
+          This audit takes about three minutes. Six areas of your life, four
+          honest readings each: where you are now, where you want to be, how
+          much of it runs on stress, and how aware of it you actually are.
+          Then you&apos;ll see the gap, named and ranked.
+        </p>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center gap-4">
+        <Link
+          href="/api/audit/start"
+          prefetch={false}
+          className="rounded-lg bg-neutral-900 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-neutral-800"
+        >
+          Start the Audit
+        </Link>
+        <span className="text-xs text-neutral-500">
+          6 areas · 4 readings each · no login
+        </span>
+      </div>
+
+      <Suspense fallback={<div className="mt-12"><GapMapSkeleton /></div>}>
+        <DemoGapMap />
+      </Suspense>
     </div>
   );
 }

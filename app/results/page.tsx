@@ -1,58 +1,57 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { LAST_ASSESSMENT_KEY } from "@/components/assessment-flow";
-import { GapMapSkeleton } from "@/components/gap-map";
+import { redirect } from "next/navigation";
+import GapMapView from "@/components/results/gap-map-view";
+import EmailCapture from "@/components/results/email-capture";
+import { getAuditBySession } from "@/lib/data/audits";
+import { getGapMapByAudit } from "@/lib/data/gap-maps";
+import { readSessionToken } from "@/lib/session";
 
-export default function ResultsIndexPage() {
-  const router = useRouter();
-  const [checked, setChecked] = useState(false);
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    let lastId: string | null = null;
-    try {
-      lastId = localStorage.getItem(LAST_ASSESSMENT_KEY);
-    } catch {
-      // localStorage unavailable — fall through to empty state
-    }
-    if (lastId) {
-      router.replace(`/results/${lastId}`);
-    } else {
-      setChecked(true);
-    }
-  }, [router]);
+export const metadata = { title: "Your Gap Map — The Gap Audit" };
 
-  if (!checked) {
-    return (
-      <div>
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-            Your Gap Map
-          </h1>
-        </header>
-        <GapMapSkeleton />
-      </div>
-    );
-  }
+export default async function ResultsPage() {
+  // Empty state: a direct visit with no audit goes home, never a blank screen.
+  const token = await readSessionToken();
+  if (!token) redirect("/");
+
+  const audit = await getAuditBySession(token);
+  if (!audit) redirect("/");
+
+  const gapMap = await getGapMapByAudit(audit.id);
+  if (!gapMap) redirect("/api/audit/start");
 
   return (
-    <div className="max-w-xl">
-      <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center">
-        <h1 className="text-lg font-semibold text-neutral-900">
-          You haven&apos;t taken an assessment yet
+    <div>
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+          Your Gap Map
         </h1>
-        <p className="mt-2 text-sm text-neutral-600">
-          Answer four quick questions across six life areas and see your
-          personal Gap Map — where you&apos;re in survival mode, and where
-          awareness is low.
+        <p className="mt-1.5 text-sm leading-relaxed text-neutral-600">
+          Widest gap first. A{" "}
+          <span className="font-medium text-amber-800">fight/flight zone</span>{" "}
+          is where this life runs on survival; a{" "}
+          <span className="font-medium text-sky-800">low-awareness zone</span>{" "}
+          is where it&apos;s happening without you noticing.
         </p>
+      </header>
+
+      <GapMapView
+        rankedAreas={gapMap.ranked_areas}
+        totalGap={gapMap.total_gap}
+      />
+
+      <div className="mt-6">
+        <EmailCapture initialEmail={audit.email} />
+      </div>
+
+      <div className="mt-8 border-t border-stone-200 pt-5">
         <Link
-          href="/assessment"
-          className="mt-5 inline-block rounded-lg bg-purple-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-purple-800"
+          href="/api/audit/start?fresh=1"
+          prefetch={false}
+          className="text-sm font-medium text-neutral-600 underline underline-offset-4 hover:text-neutral-900"
         >
-          Start Your Assessment
+          Take the audit again
         </Link>
       </div>
     </div>

@@ -1,5 +1,18 @@
-create type if not exists life_area as enum ('career', 'health', 'relationships', 'finances', 'growth', 'purpose');
-create type if not exists audit_status as enum ('in_progress', 'completed');
+-- Schema for docs/DATA_MODEL.md: audits, area_responses, gap_maps.
+-- NOTE: the enum guards below are DO blocks on purpose — PostgreSQL does not
+-- support `create type if not exists`, which aborts the entire script.
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'life_area') then
+    create type life_area as enum ('career','health','relationships','finances','growth','purpose');
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'audit_status') then
+    create type audit_status as enum ('in_progress','completed');
+  end if;
+end $$;
+
 
 create table if not exists audits (
   id uuid primary key default gen_random_uuid(),
