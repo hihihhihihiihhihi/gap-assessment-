@@ -13,11 +13,13 @@
 ## Decisions
 
 - GapFinder-inspired redesign adopted: results page now includes a radar chart, alignment score, and explicit strengths/gaps sections.
+- All database access is now routed through a server-only service-role client (Sprint 4).
 
 ## Architecture
 
 - Sprint 1 built data layer, scoring engine, responsive shell, and demo Gap Map landing — establishing the core architecture in a single sprint.
 - Core architecture (data layer, scoring engine, responsive shell, demo gap map landing) was established in sprint 1.
+- Client-side DB access eliminated; the service-role client enforces row-level security from the server.
 
 ## Notes
 
