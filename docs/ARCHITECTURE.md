@@ -1,44 +1,55 @@
 # Architecture
 
 ## Stack
-Next.js (App Router) + Supabase (Postgres) + Vercel.
+Next.js 14 (App Router) · Supabase (Postgres) · Vercel deploy.
 
-## Build Now vs Later
-**Now:** Assessment flow (6 areas × 4 questions), score persistence, Gap Map results with computed flags, demo data visible without login.
-**Later:** AI-generated personalized insights, email capture, user accounts, progress tracking.
+## Build Sequence
+**Now:** DB schema + data-access layer → audit wizard (6 areas × 4 readings, persisted) → Gap Map computation + results view → email capture.
+**Next:** AI narrative summary in the chapter's voice → polish all UI states → deploy.
+**Later:** Lock it down — auth, owner-scoped RLS, rate limiting, lead routing to Phoenix Realm / Theta Collective.
 
 ## Key User Action Flow
-1. Visitor lands on homepage → sees demo Gap Map + "Start Your Assessment" CTA
-2. Starts assessment → guided through 6 life areas, 4 questions each (sliders)
-3. On completion → scores saved to DB → Gap Map renders with gap scores, fight/flight flags (stress ≥ 4), awareness flags (awareness ≤ 2)
-4. User sees where they're in survival mode and where awareness is low
+1. Visitor lands on home page → taps "Start the Audit"
+2. Wizard presents one area at a time (career → health → relationships → finances → growth → purpose) — four slider inputs per area, auto-saves each response to DB
+3. After sixth area, server computes the Gap Map (rank by gap, flag stress ≥ 7 and awareness ≤ 4)
+4. Results page renders the Gap Map: ranked bars, fight/flight zones, low-awareness zones, total gap — in the chapter's language
+5. Email capture card: "Leave your email to keep your Gap Map" → saves email to audit record → confirmation
 
-## Responsive Nav Shell
-Left sidebar on desktop (Home, Assessment, Results). Hamburger menu on mobile. Current section highlighted.
+## Nav Shell
+Single guided flow (landing → wizard → results → email). No sidebar — this is a linear wizard, not a multi-section app.
 
 ## Layer Plan
-1. **Data layer** — Supabase tables, `lib/data/` queries (built first)
-2. **App logic** — assessment flow, score computation in `lib/assessment/` (built second)
-3. **Smart features** — AI insights in `lib/ai/` (later, optional; core runs without it)
+1. **Data layer** (`lib/data/`): all DB reads/writes — audits, area_responses, gap_maps. Nothing inline in UI.
+2. **App logic** (`lib/scoring/`): gap calculator, flag logic, ranking — pure functions, server-runnable.
+3. **Smart features** (`lib/ai/`, later): AI narrative summary of the Gap Map in the chapter's voice.
 
-## Why Core Runs Without AI
-All scores and flags are computed from user inputs using rule-based thresholds. No AI call is required for the assessment or results to render.
+## Why the Core Runs Without AI
+Gap Map ranking and flags are pure arithmetic (gap = want − now; stress_flag = stress ≥ 7; awareness_flag = awareness ≤ 4; sort by gap descending). The AI layer (narrative summary) is additive — the Gap Map renders fully without it.
 
 ## Repo Structure
 ```
-lib/data/          — all DB reads/writes
-lib/assessment/    — scoring + gap computation
-lib/ai/            — AI insights (later)
-app/               — routes
-components/         — UI components
-__tests__/          — beside code they test
+src/
+  app/
+    page.tsx                  # landing + start
+    audit/
+      [area]/page.tsx         # per-area wizard step
+    results/
+      page.tsx                 # Gap Map + email capture
+  components/
+    audit/                     # slider inputs, area card, progress
+    results/                   # gap bar, flag badge, ranked list
+    ui/                        # shared primitives
+  lib/
+    data/                      # audits.ts, area-responses.ts, gap-maps.ts
+    scoring/                   # gap-calculator.ts
+    ai/                        # summary.ts (later)
+  tests/                       # beside the code they test
 ```
 
 ## Module Map
-
-| Module | Responsibility | Data Owned | Build Order |
-|--------|---------------|-----------|-------------|
-| life-areas | Area config + display | life_areas | 1st |
-| assessment | Assessment flow + scoring | assessments, assessment_scores | 2nd |
-| gap-map | Results visualization | computed from assessment_scores | 3rd |
-| auth | Login + per-user isolation | user_id scoping | 4th (later) |
+| Module | Responsibility | Data it owns | Build order |
+|---|---|---|---|
+| **audit-engine** | Wizard flow, 6 areas × 4 readings, persistence | audits, area_responses | 1st |
+| **gap-map** | Compute ranking + flags from responses | gap_maps | 2nd |
+| **results-view** | Render Gap Map visually + email capture | reads gap_maps, writes email on audits | 2nd |
+| **ai-summary** (later) | Narrative summary in chapter's voice | ai_summary field on gap_maps | 3rd |

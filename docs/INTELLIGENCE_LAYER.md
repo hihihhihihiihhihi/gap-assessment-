@@ -1,36 +1,42 @@
 # Intelligence Layer
 
 ## Messy Inputs
-User ratings are subjective 1–10 / 1–5 scales. No free text in v1 — pure slider inputs. No NLP needed.
+Four self-rated readings per area (now, want, stress, awareness) on 1–10 sliders. No free text in v1 — structured input only.
 
-## Auto-Structure Schema (per area, computed client + server)
+## Auto-Structure (Rule-Based, v1)
 ```json
 {
-  "life_area": "Career & Business",
-  "current_score": 4,
-  "desired_score": 9,
-  "gap_score": 5,
-  "stress_level": 5,
-  "fight_flight": true,
-  "awareness_level": 2,
-  "low_awareness": true,
-  "priority": "high"
+  "ranked_areas": [
+    {"area": "health", "gap": 5, "stress_flag": true, "awareness_flag": true, "now": 3, "want": 8, "stress": 9, "awareness": 2},
+    {"area": "career", "gap": 4, "stress_flag": false, "awareness_flag": false, "now": 5, "want": 9, "stress": 5, "awareness": 7},
+    {"area": "relationships", "gap": 3, "stress_flag": true, "awareness_flag": false, "now": 5, "want": 8, "stress": 8, "awareness": 6},
+    {"area": "finances", "gap": 2, "stress_flag": false, "awareness_flag": false, "now": 6, "want": 8, "stress": 4, "awareness": 7},
+    {"area": "growth", "gap": 2, "stress_flag": false, "awareness_flag": true, "now": 6, "want": 8, "stress": 3, "awareness": 3},
+    {"area": "purpose", "gap": 1, "stress_flag": false, "awareness_flag": false, "now": 7, "want": 8, "stress": 4, "awareness": 8}
+  ],
+  "total_gap": 17,
+  "zones": {
+    "fight_or_flight": ["health", "relationships"],
+    "low_awareness": ["health", "growth"],
+    "widest_gap": "health"
+  }
 }
 ```
 
-## Events to Track
-assessment_started, area_completed, assessment_completed, gap_map_viewed, new_assessment_started.
-
-## Scoring Rules (rule-based, v1)
-- **gap_score** = desired_score − current_score
-- **fight_flight** = stress_level ≥ 4
-- **low_awareness** = awareness_level ≤ 2
-- **priority**: high = fight_flight AND low_awareness; medium = fight_flight OR low_awareness; low = neither
-- **overall_gap** = average of all 6 area gap_scores
+## Scoring Rules (v1, all arithmetic)
+- `gap_score` = want − now (per area)
+- `total_gap` = sum of all gap_scores
+- `stress_flag` = stress ≥ 7 (fight/flight zone)
+- `awareness_flag` = awareness ≤ 4 (low-awareness zone)
+- Ranking: areas sorted by gap_score descending
 
 ## What Gets Ranked
-Life areas sorted by priority (high → medium → low), then by gap_score descending. Gap Map highlights high-priority areas first.
+All six life areas, by gap size. Flags overlay the ranking: an area can be both a wide gap and fight/flight, or a wide gap with low awareness — those are the priority zones.
+
+## Events to Track
+- audit_started, area_completed (which area), audit_completed, email_captured, results_viewed
+- Drop-off point (which area step was last completed before exit)
 
 ## v1 vs Later
-**v1:** All rule-based, zero AI. Scoring and flags are pure arithmetic.
-**Later:** AI-generated personalized insight per area (stored as ai_summary + ai_source + ai_confidence + ai_review_status). Low-confidence (< 0.7) outputs routed to review queue, never shown as fact.
+- **v1:** Rule-based scoring + ranking. No AI.
+- **Later:** AI narrative summary of the Gap Map in the chapter's voice — names the current, fight/flight, the gap. Stored in `gap_maps.ai_summary` with source + confidence + review_status. Low-confidence output queued for review, never shown as fact.

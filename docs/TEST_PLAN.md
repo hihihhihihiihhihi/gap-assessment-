@@ -1,30 +1,36 @@
 # Test Plan
 
 ## v1 Success Scenario (manual)
-1. Open app URL in incognito browser → homepage loads, demo Gap Map visible with 6 areas
-2. Click "Start Your Assessment" → assessment begins at Career & Business
-3. Set all 4 sliders for first area → "Next" button enables
-4. Click through all 6 areas, setting 4 sliders each → final area shows "View My Gap Map"
-5. Gap Map page loads → shows 6 area cards with gap scores, fight/flight badges, awareness badges
-6. Verify: area with stress ≥ 4 shows fight/flight badge; area with awareness ≤ 2 shows low-awareness badge
-7. Verify: areas sorted by priority (high first), then by gap_score descending
-8. Click "Start New Assessment" → new assessment begins fresh
-9. Verify in Supabase dashboard: new assessment row + 6 assessment_scores rows persisted
+1. Open the app URL in an incognito window (no login)
+2. Verify landing page loads with intro copy and "Start the Audit" button
+3. Tap "Start the Audit" — wizard starts on Career
+4. Move four sliders (now, want, stress, awareness) to different values
+5. Tap Next — verify progress indicator advances, Health appears
+6. Repeat for all six areas (career → health → relationships → finances → growth → purpose)
+7. After sixth area, verify results page loads with Gap Map:
+   - Six areas ranked by gap size (largest first)
+   - Areas with stress ≥ 7 show fight/flight badge
+   - Areas with awareness ≤ 4 show low-awareness badge
+   - Total gap number displayed
+   - Copy uses chapter language: the current, fight/flight, the gap
+8. Email capture card visible: "Leave your email to keep your Gap Map"
+9. Enter a real-format email, submit → confirmation state shows
+10. Check Supabase: audits row has status=completed, email set, completed_at set; gap_maps row has ranked_areas JSON
 
 ## Empty State
-- Navigate to results page with no completed assessment → "You haven't taken an assessment yet" message + "Start Your Assessment" CTA
+- Navigate directly to /results with no audit in session → redirect to landing page (not a blank screen)
+- Open wizard with no in-progress audit → starts fresh audit
 
 ## Error State
-- Simulate DB write failure (disconnect network before completing) → form retains slider values, error message shown, retry button appears
-- Click retry → submission succeeds when network restored
+- Simulate network failure on area save (DevTools offline) → error message with retry button, no silent data loss
+- Submit invalid email format → inline validation error, no DB write
+
+## Partial State
+- Complete 3 of 6 areas, close browser, reopen within session window → resume at area 4 (responses 1–3 intact)
 
 ## Loading State
-- Gap Map page: skeleton cards appear while data loads
+- Every save step shows a loading indicator on the Next button
+- Gap Map compute step shows a brief loading state before results render
 
-## Validation
-- Attempt to submit area without all 4 sliders set → "Next" disabled, cannot proceed
-- Score values constrained by slider min/max (1–10 for current/desired, 1–5 for stress/awareness)
-- Server-side check constraints reject out-of-range values
-
-## Responsive
-- View on mobile (375px) → sidebar collapses to hamburger, assessment sliders usable, Gap Map cards stack vertically
+## Demo Data
+- With seed data present, any page that reads audits/gap_maps renders demo rows without error

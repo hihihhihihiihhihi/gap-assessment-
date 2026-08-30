@@ -1,52 +1,48 @@
-# Tasks & Sprints
+# Tasks
 
-## Sprint 1 — Foundation & Data
-**Goal:** Database + app shell + demo landing page (no login).
-- [ ] Create Supabase tables, seed life areas + 3 demo assessments with scores
-- [ ] Set up Next.js app with Supabase client
-- [ ] Build responsive sidebar shell (desktop) / hamburger (mobile)
-- [ ] Landing page showing demo Gap Map from seeded data
-- [ ] Data-access layer in `lib/data/`
+## Sprint 1 — Foundation + Audit Engine
+**Goal:** DB schema live, 6-area wizard working end-to-end with persistence.
+- [ ] Create migration SQL (audits, area_responses, gap_maps) + seed demo rows
+- [ ] Build data-access layer (`lib/data/`): create audit, save area response, fetch audit + responses
+- [ ] Build scoring module (`lib/scoring/gap-calculator.ts`): gap_score, flags, ranking
+- [ ] Landing page: intro copy + "Start the Audit" button → creates audit, redirects to first area
+- [ ] Wizard: one area per step, four sliders (now, want, stress, awareness), auto-save to DB, progress indicator, next/back
+- [ ] All six areas accessible; incomplete audit saved as in_progress
+- **DoD:** Visitor starts audit, completes all six areas, responses persist in DB. Demo rows render on any read.
 
-**Definition of Done:** Homepage loads at the live URL showing a demo Gap Map with 6 life areas and computed flags — no login required.
+## Sprint 2 — Gap Map + Email Capture ← v1 FUNCTIONAL MILESTONE
+**Goal:** Full success scenario works end-to-end for anonymous visitor.
+- [ ] After sixth area, compute Gap Map server-side (rank by gap, flag stress ≥ 7 and awareness ≤ 4)
+- [ ] Insert gap_maps row with ranked_areas JSON + total_gap
+- [ ] Results page: ranked area bars (gap width), fight/flight zone badges, low-awareness zone badges, total gap — in the chapter's language (the current, fight/flight, the gap)
+- [ ] Email capture card on results page: "Leave your email to keep your Gap Map" → validates + saves to audits.email → confirmation state
+- [ ] Mark audit status = completed, set completed_at
+- **DoD:** Anonymous visitor completes all six areas, sees her ranked Gap Map with flags, leaves email, email persisted. This is the v1 success scenario.
 
-## Sprint 2 — Assessment Engine + Gap Map ← v1 FUNCTIONAL MILESTONE
-**Goal:** The core workflow works end-to-end.
-- [ ] Assessment flow: 6 areas × 4 rating sliders (current, desired, stress, awareness)
-- [ ] Progress indicator through areas; "Next" validates all 4 sliders set
-- [ ] On completion: create assessment row + 6 assessment_scores rows
-- [ ] Compute gap_score, fight_flight, low_awareness, priority per area
-- [ ] Gap Map results page: per-area cards with gap score, fight/flight badge, awareness badge
-- [ ] Areas ranked by priority then gap_score descending
-- [ ] "Start New Assessment" button
-
-**Definition of Done:** A visitor completes a full assessment and sees their personal Gap Map with correct computed flags — data persisted to DB.
-
-## Sprint 3 — Polish & Resilience
-**Goal:** All UI states handled; responsive; clear copy.
-- [ ] Empty state: no results → "You haven't taken an assessment yet" + CTA
-- [ ] Error state: DB write fails → retain form values, show message, retry button
-- [ ] Loading skeletons for Gap Map cards
-- [ ] Responsive layout validated on mobile viewport
-- [ ] Clear UI copy: question text, button labels, result descriptions
-- [ ] Validate score ranges server-side (1–10 / 1–5 constraints)
-
-**Definition of Done:** Every screen handles loading, empty, and error states gracefully; app works on mobile and desktop.
+## Sprint 3 — Polish + Deploy
+**Goal:** Production-ready UX, all five states handled, deployed.
+- [ ] Loading states on every save and compute step
+- [ ] Empty state: if results page loads with no audit (direct visit) — redirect to start
+- [ ] Error state: save failure shows retry, not silent loss
+- [ ] Partial state: in-progress audit resume (session_token cookie)
+- [ ] Mobile-responsive wizard and results
+- [ ] Analytics events: audit_started, area_completed, audit_completed, email_captured, drop-off point
+- [ ] Deploy to Vercel; verify live URL returns 200 for anonymous visitor
+- **DoD:** Deployed app; success scenario passes on live URL; loading/empty/error/partial all handled.
 
 ## Sprint 4 — Lock It Down
-**Goal:** Auth + per-user data isolation.
-- [ ] Add Supabase Auth (email signup/login)
-- [ ] Replace open RLS policies with owner-scoped (auth.uid() = user_id) on assessments + assessment_scores
-- [ ] life_areas: public read, admin write only
-- [ ] Logged-out users see landing + demo data; starting assessment redirects to login
-- [ ] Security pass: no secrets in client bundle, npm audit, validate input ranges
-
-**Definition of Done:** A new user signs up, takes an assessment, and sees only their own results. Demo data visible to logged-out visitors.
+**Goal:** Owner-scoped security before real traffic.
+- [ ] Add Supabase Auth (email/password + magic link)
+- [ ] Replace permissive RLS with `auth.uid() = user_id` policies on all tables
+- [ ] Set user_id on audit creation from auth context
+- [ ] Rate limit: 5 audits per IP per hour
+- [ ] Security pass: injection, XSS, PII exposure, rate-limiting — state what was and wasn't verified
+- **DoD:** A visitor's audit is only visible to her; anonymous permissive access removed; rate limit active.
 
 ## Gantt
 ```
-Sprint 1: Foundation  ████████░░░░░░░░░░░░
-Sprint 2: Engine    ░░░░░░░░████████████░░  ← v1 functional
-Sprint 3: Polish    ░░░░░░░░░░░░░░░░██████
-Sprint 4: Lockdown ░░░░░░░░░░░░░░░░░░░░██
+Sprint 1: [====] Foundation + Audit Engine
+Sprint 2:      [====] Gap Map + Email Capture  ← v1 functional
+Sprint 3:           [====] Polish + Deploy
+Sprint 4:                [====] Lock It Down
 ```

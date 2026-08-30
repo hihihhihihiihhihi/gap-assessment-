@@ -1,26 +1,27 @@
 # Security
 
 ## Secret Handling
-- Supabase URL + anon key: `NEXT_PUBLIC_` env vars (safe for client).
-- Supabase service role key: server-side only, never in client bundle, never in git.
-- No secrets in code, comments, or chat.
+- Supabase service key and any AI API keys live in Vercel environment variables — never in code, never in chat, never exposed to the client.
+- Client-side code uses the Supabase anon key only (read/write within RLS policies).
 
 ## Permission Model
-- **v1 (demo-first):** Open RLS on all tables — anyone can read/write. This is intentional for demo without login.
-- **Lock-down (later):**
-  - `assessments` + `assessment_scores`: owner-scoped (auth.uid() = user_id). Users see only their own data.
-  - `life_areas`: public read (shared config), admin-only write.
-  - Replace all v1 open policies with owner-scoped policies.
+- **v1 (demo-first):** RLS enabled but permissive — all tables readable and writable without login. The app works for anonymous visitors.
+- **Lock-down sprint:** Replace permissive policies with `auth.uid() = user_id` owner-scoped policies. A visitor can only read/write her own audit, responses, and gap map. Email field readable only by the owner.
+- No admin role in v1. Later: a service role for lead review, behind auth.
 
 ## Approved-Tools Rule
-Only named, narrow tools with strict schemas: `generate_area_insight`, `draft_action_plan`. No raw run-any or send-any tools. Each returns structured errors marking retryable vs terminal with a human-readable reason.
+- No raw `run_any` / `send_any` capabilities. Every agent action (later) calls a named, narrowly-scoped server function with explicit inputs and structured error output.
+- Tools return `{ success: boolean, retryable: boolean, reason: string }` — never throw silently.
 
 ## Audit Principle
-Every AI-generated output carries source, confidence, and review_status. Low-confidence outputs are queued for review, never shown as fact. Every approval is logged.
+- Every meaningful action (later: lead scored, email drafted, email sent) is written to `audit_logs` with actor, action, target, outcome, risk level, timestamp.
+- Email addresses are PII — never logged in plain text in application logs; stored only in the `audits.email` column.
 
-## PII
-No PII collected in v1 (no names, no emails). Lock-down sprint adds email for accounts — stored in Supabase Auth, not in domain tables.
+## Rate Limiting (lock-down sprint)
+- Audit creation: max 5 per IP per hour (prevents spam signups skewing completion metrics).
+- Email capture: 1 per audit.
 
-## What Could Not Be Verified in v1
-- Rate-limiting on assessment creation (add in lock-down sprint)
-- CSRF protection (Next.js server actions provide baseline; verify before production)
+## What Could NOT Be Verified in v1
+- No penetration test run yet — plan states this plainly.
+- PII exposure audit deferred to lock-down sprint.
+- Prompt injection resistance: N/A in v1 (no AI), relevant when narrative summary ships.

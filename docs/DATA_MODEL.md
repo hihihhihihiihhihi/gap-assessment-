@@ -1,49 +1,48 @@
 # Data Model
 
-## life_areas
+## audits
 | Field | Type | Notes |
-|-------|------|-------|
-| id | uuid (PK) | default gen_random_uuid() |
-| user_id | uuid | nullable, for future ownership |
-| name | text | not null |
-| description | text | |
-| sort_order | int | default 0 |
-| created_at | timestamptz | default now() |
+|---|---|---|
+| id | uuid, PK | default gen_random_uuid() |
+| user_id | uuid, nullable | for owner-scoping at lock-down |
+| session_token | text, not null | identifies anonymous visitor session |
+| status | audit_status | `in_progress` / `completed` |
+| email | text, nullable | captured at end |
+| completed_at | timestamptz, nullable | set when Gap Map generated |
+| created_at | timestamptz, not null | default now() |
 
-**Relationships:** 1-to-many with assessment_scores.
-**RLS:** v1 open read/write. Lock-down: public read, admin write.
-
-## assessments
+## area_responses
 | Field | Type | Notes |
-|-------|------|-------|
-| id | uuid (PK) | |
-| user_id | uuid | nullable |
-| status | text | in_progress \| completed |
-| started_at | timestamptz | |
-| completed_at | timestamptz | |
-| created_at | timestamptz | default now() |
+|---|---|---|
+| id | uuid, PK | |
+| user_id | uuid, nullable | for owner-scoping later |
+| audit_id | uuid, FK → audits(id) | on delete cascade |
+| area | life_area enum | career, health, relationships, finances, growth, purpose |
+| now_score | numeric, 1–10 | where she is now |
+| want_score | numeric, 1–10 | where she wants to be |
+| stress_level | numeric, 1–10 | how much runs on fight/flight |
+| awareness_level | numeric, 1–10 | how aware she is of what she feels |
+| gap_score | numeric, generated | want_score − now_score, stored |
+| stress_flag | boolean, generated | stress_level ≥ 7 |
+| awareness_flag | boolean, generated | awareness_level ≤ 4 |
+| created_at | timestamptz, not null | default now() |
 
-**Relationships:** 1-to-many with assessment_scores.
-**RLS:** v1 open. Lock-down: owner only (auth.uid() = user_id).
+Unique constraint: (audit_id, area) — one response per area per audit.
 
-## assessment_scores
+## gap_maps
 | Field | Type | Notes |
-|-------|------|-------|
-| id | uuid (PK) | |
-| assessment_id | uuid (FK → assessments) | on delete cascade |
-| life_area_id | uuid (FK → life_areas) | |
-| user_id | uuid | nullable |
-| current_score | int | 1–10, check constraint |
-| desired_score | int | 1–10, check constraint |
-| stress_level | int | 1–5, check constraint |
-| awareness_level | int | 1–5, check constraint |
-| ai_summary | text | nullable — AI-generated insight |
-| ai_source | text | nullable — model/label |
-| ai_confidence | numeric | nullable — 0.0–1.0 |
-| ai_review_status | text | default 'unreviewed' |
-| created_at | timestamptz | default now() |
+|---|---|---|
+| id | uuid, PK | |
+| user_id | uuid, nullable | for owner-scoping later |
+| audit_id | uuid, FK → audits(id) | one-to-one |
+| ranked_areas | jsonb, not null | ordered array: `[{area, gap, stress_flag, awareness_flag}]` |
+| total_gap | numeric, not null | sum of all gap_scores |
+| ai_summary | text, nullable | AI-generated narrative (later) |
+| ai_summary_source | text, nullable | model/agent that produced it |
+| ai_summary_confidence | numeric, nullable | 0–1 |
+| ai_summary_review_status | text, default 'unreviewed' | unreviewed / approved / rejected |
+| created_at | timestamptz, not null | default now() |
 
-**Unique:** (assessment_id, life_area_id) — one score row per area per assessment.
-**Relationships:** belongs-to assessment, belongs-to life_area.
-**RLS:** v1 open. Lock-down: owner only.
-**Computed in app (not stored):** gap_score = desired − current; fight_flight = stress ≥ 4; low_awareness = awareness ≤ 2; priority = high if fight_flight AND low_awareness, medium if either, low otherwise.
+## RLS / Permissions
+- All tables: RLS enabled, v1 permissive policies (select + write for all) so the demo works without login.
+- Lock-down sprint: replace with `auth.uid() = user_id` owner-scoped policies.
