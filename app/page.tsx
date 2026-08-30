@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { getGapMapByAudit } from "@/lib/data/gap-maps";
+import { getAreaResponses } from "@/lib/data/area-responses";
+import { buildGapMap } from "@/lib/scoring/gap-calculator";
 import GapMapView, { GapMapSkeleton } from "@/components/results/gap-map-view";
 
 export const dynamic = "force-dynamic";
@@ -10,8 +11,20 @@ const DEMO_AUDIT_ID = "a0000000-0000-4000-8000-000000000001";
 
 async function DemoGapMap() {
   try {
-    const gapMap = await getGapMapByAudit(DEMO_AUDIT_ID);
-    if (!gapMap) return null;
+    // Built from the seeded responses rather than the stored gap_maps JSON:
+    // the seed JSON carries only {area, gap, flags}, so the per-area readings
+    // would render blank.
+    const responses = await getAreaResponses(DEMO_AUDIT_ID);
+    if (responses.length === 0) return null;
+    const gapMap = buildGapMap(
+      responses.map((r) => ({
+        area: r.area,
+        now_score: Number(r.now_score),
+        want_score: Number(r.want_score),
+        stress_level: Number(r.stress_level),
+        awareness_level: Number(r.awareness_level),
+      })),
+    );
     return (
       <section className="mt-12">
         <div className="mb-3 flex items-baseline justify-between">

@@ -12,8 +12,11 @@ function pct(value: number) {
 }
 
 function GapRow({ area, rank }: { area: RankedArea; rank: number }) {
-  const left = Math.min(area.now, area.want);
-  const width = Math.abs(area.want - area.now);
+  // Stored gap_maps JSON may predate the per-area readings; degrade to the
+  // gap number alone rather than rendering empty labels.
+  const hasReadings = Number.isFinite(area.now) && Number.isFinite(area.want);
+  const left = hasReadings ? Math.min(area.now, area.want) : 0;
+  const width = hasReadings ? Math.abs(area.want - area.now) : 0;
 
   return (
     <li className="border-t border-stone-200 py-4 first:border-t-0">
@@ -33,6 +36,8 @@ function GapRow({ area, rank }: { area: RankedArea; rank: number }) {
       </div>
 
       {/* Range bar: the distance between the current and where she wants to be */}
+      {hasReadings && (
+        <>
       <div className="relative mt-3 h-2 w-full rounded-full bg-stone-200">
         <div
           className="absolute inset-y-0 rounded-full bg-neutral-300"
@@ -58,18 +63,21 @@ function GapRow({ area, rank }: { area: RankedArea; rank: number }) {
           <strong className="text-neutral-800">{area.want}</strong>
         </span>
       </div>
+        </>
+      )}
 
       {(area.stress_flag || area.awareness_flag) && (
         <div className="mt-2.5 flex flex-wrap gap-2">
           {area.stress_flag && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
-              <span aria-hidden>▲</span> Fight/flight zone — stress{" "}
-              {area.stress}/10
+              <span aria-hidden>▲</span> Fight/flight zone
+              {Number.isFinite(area.stress) ? " — stress " + area.stress + "/10" : ""}
             </span>
           )}
           {area.awareness_flag && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">
-              <span aria-hidden>◐</span> Low awareness — {area.awareness}/10
+              <span aria-hidden>◐</span> Low awareness
+              {Number.isFinite(area.awareness) ? " — " + area.awareness + "/10" : ""}
             </span>
           )}
         </div>
