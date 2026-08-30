@@ -23,3 +23,5 @@
 
 - Sprint 2 delivered the assessment engine and personal Gap Map (v1 functional milestone).
 - Project rebuilt to current /docs spec including audit wizard, Gap Map, and email capture components.
+- Sprint 3 completed — data layer, scoring engine, and assessment engine are confirmed working against real data
+- sprint 3 verified end-to-end against the live database
