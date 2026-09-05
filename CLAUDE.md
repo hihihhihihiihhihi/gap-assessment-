@@ -21,6 +21,10 @@
 - Core architecture (data layer, scoring engine, responsive shell, demo gap map landing) was established in sprint 1.
 - Client-side DB access eliminated; the service-role client enforces row-level security from the server.
 
+## Gotchas
+
+- Audit wizard end-to-end flow works correctly even when the service-role key is absent (fallback handling verified).
+
 ## Notes
 
 - Sprint 2 delivered the assessment engine and personal Gap Map (v1 functional milestone).
