@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createDbClient } from "@/lib/supabase/db";
 import type { AreaKey, Readings } from "@/lib/scoring/gap-calculator";
 
 export interface AreaResponse extends Readings {
@@ -15,7 +15,7 @@ const RESPONSE_FIELDS =
 export async function getAreaResponses(
   auditId: string,
 ): Promise<AreaResponse[]> {
-  const supabase = createAdminClient();
+  const supabase = createDbClient();
   const { data, error } = await supabase
     .from("area_responses")
     .select(RESPONSE_FIELDS)
@@ -30,7 +30,7 @@ export async function saveAreaResponse(
   area: AreaKey,
   readings: Readings,
 ): Promise<void> {
-  const supabase = createAdminClient();
+  const supabase = createDbClient();
   const { error } = await supabase
     .from("area_responses")
     .upsert(
