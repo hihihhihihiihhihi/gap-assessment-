@@ -12,11 +12,11 @@
 
 ## Sprint 2 — Gap Map + Email Capture ← v1 FUNCTIONAL MILESTONE
 **Goal:** Full success scenario works end-to-end for anonymous visitor.
-- [ ] After sixth area, compute Gap Map server-side (rank by gap, flag stress ≥ 7 and awareness ≤ 4)
-- [ ] Insert gap_maps row with ranked_areas JSON + total_gap
-- [ ] Results page: ranked area bars (gap width), fight/flight zone badges, low-awareness zone badges, total gap — in the chapter's language (the current, fight/flight, the gap)
-- [ ] Email capture card on results page: "Leave your email to keep your Gap Map" → validates + saves to audits.email → confirmation state
-- [ ] Mark audit status = completed, set completed_at
+- [x] After sixth area, compute Gap Map server-side (rank by gap, flag stress ≥ 7 and awareness ≤ 4)
+- [x] Insert gap_maps row with ranked_areas JSON + total_gap
+- [x] Results page: ranked area bars (gap width), fight/flight zone badges, low-awareness zone badges, total gap — in the chapter's language (the current, fight/flight, the gap)
+- [x] Email capture card on results page: "Leave your email to keep your Gap Map" → validates + saves to audits.email → confirmation state
+- [x] Mark audit status = completed, set completed_at
 - **DoD:** Anonymous visitor completes all six areas, sees her ranked Gap Map with flags, leaves email, email persisted. This is the v1 success scenario.
 
 ## Sprint 3 — Polish + Deploy

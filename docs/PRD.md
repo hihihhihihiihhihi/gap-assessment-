@@ -12,12 +12,12 @@ Female professionals and entrepreneurs, 35–65, who look successful and are qui
 - **Gap Map** — computed from all six area responses: areas ranked by gap size, fight/flight and low-awareness zones flagged. Stored as ranked JSON + total gap.
 
 ## MVP (v1) — Checklist
-- [ ] Landing page that introduces the audit and starts the flow
-- [ ] Guided wizard: six areas, four readings each, persisted to DB as she goes
-- [ ] Gap Map computed and rendered immediately after completion (ranked areas, stress/awareness flags, visual bars)
-- [ ] Email capture at the end of the Gap Map — email saves to the audit record
-- [ ] Named zones use the chapter's language: the current, fight/flight, the gap
-- [ ] Works end-to-end with no login; seed demo data so results pages render for anonymous visitors
+- [x] Landing page that introduces the audit and starts the flow
+- [x] Guided wizard: six areas, four readings each, persisted to DB as she goes
+- [x] Gap Map computed and rendered immediately after completion (ranked areas, stress/awareness flags, visual bars)
+- [x] Email capture at the end of the Gap Map — email saves to the audit record
+- [x] Named zones use the chapter's language: the current, fight/flight, the gap
+- [x] Works end-to-end with no login; seed demo data so results pages render for anonymous visitors
 
 ## Non-Goals (v1)
 - Accounts / login / user dashboards
