@@ -31,3 +31,4 @@
 - Project rebuilt to current /docs spec including audit wizard, Gap Map, and email capture components.
 - Sprint 3 completed — data layer, scoring engine, and assessment engine are confirmed working against real data
 - sprint 3 verified end-to-end against the live database
+- Email capture component and v1 MVP checklist are marked complete.
