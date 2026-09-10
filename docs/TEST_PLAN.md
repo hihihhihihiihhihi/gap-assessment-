@@ -1,36 +1,38 @@
 # Test Plan
 
 ## v1 Success Scenario (manual)
-1. Open the app URL in an incognito window (no login)
-2. Verify landing page loads with intro copy and "Start the Audit" button
-3. Tap "Start the Audit" — wizard starts on Career
-4. Move four sliders (now, want, stress, awareness) to different values
-5. Tap Next — verify progress indicator advances, Health appears
-6. Repeat for all six areas (career → health → relationships → finances → growth → purpose)
-7. After sixth area, verify results page loads with Gap Map:
-   - Six areas ranked by gap size (largest first)
-   - Areas with stress ≥ 7 show fight/flight badge
-   - Areas with awareness ≤ 4 show low-awareness badge
-   - Total gap number displayed
-   - Copy uses chapter language: the current, fight/flight, the gap
-8. Email capture card visible: "Leave your email to keep your Gap Map"
-9. Enter a real-format email, submit → confirmation state shows
-10. Check Supabase: audits row has status=completed, email set, completed_at set; gap_maps row has ranked_areas JSON
+1. Open `/` in a fresh incognito window — verify intro copy + "Begin" button render
+2. Click Begin — verify redirect to `/audit/career` with progress bar showing 1/6
+3. Move all four sliders to different values, click Next — verify progress updates to 2/6
+4. Repeat for all six areas — verify each step persists (check DB: 6 area_responses rows)
+5. After final area (purpose) Next click — verify redirect to `/gap-map`
+6. Verify Gap Map shows: six areas ranked by priority, fight/flight zones flagged, low-awareness zones flagged, overall gap number
+7. Verify chapter-language labels present ("the gap," "fight/flight," "the current")
+8. Enter email in capture field, submit — verify redirect to `/saved`
+9. Verify `/saved` shows confirmation message
+10. Check DB: leads row exists with correct assessment_id and email
 
-## Empty State
-- Navigate directly to /results with no audit in session → redirect to landing page (not a blank screen)
-- Open wizard with no in-progress audit → starts fresh audit
+## Empty State Tests
+- **No areas completed yet:** Navigate to `/gap-map` without completing audit → redirect to `/` with message "Complete all six areas to see your Gap Map."
+- **Partial completion:** Complete only 3 areas, try to access `/gap-map` → redirect to next incomplete area
 
-## Error State
-- Simulate network failure on area save (DevTools offline) → error message with retry button, no silent data loss
-- Submit invalid email format → inline validation error, no DB write
+## Error State Tests
+- **Network failure during area submission:** Disconnect network, click Next → show inline error "Couldn't save your response. Check your connection and try again." Retry succeeds.
+- **Invalid email:** Enter "notanemail" → inline validation error "Please enter a valid email address." Submit button disabled.
+- **Duplicate email submission:** Submit same email twice for same assessment → second attempt shows "You've already saved this Gap Map."
 
-## Partial State
-- Complete 3 of 6 areas, close browser, reopen within session window → resume at area 4 (responses 1–3 intact)
+## Loading State Tests
+- **Gap Map computation:** After final area, brief loading state with "Drawing your Gap Map…" before render
+- **Email submission:** Button shows "Saving…" while request in flight
 
-## Loading State
-- Every save step shows a loading indicator on the Next button
-- Gap Map compute step shows a brief loading state before results render
+## Responsive Tests
+- Complete full flow on 375px viewport — all sliders, buttons, Gap Map chart readable and usable
+- Verify no horizontal scroll on any screen
 
-## Demo Data
-- With seed data present, any page that reads audits/gap_maps renders demo rows without error
+## Seed Data Tests
+- Load `/` — demo assessments exist in DB for development rendering checks
+- Verify seed data does not appear in user-facing Gap Map (only current session's assessment)
+
+## Security Spot-Check
+- Verify leads table is insert-only from client (no SELECT from browser returns data)
+- Verify no secrets visible in page source or network response headers

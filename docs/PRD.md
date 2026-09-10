@@ -1,30 +1,35 @@
 # Gap Assessment — PRD
 
 ## Problem
-High-performing women (35–65) look successful from the outside but can't see the distance between the life they live and the life they want — or recognise how much runs on fight-or-flight without knowing. The Gap Audit makes that distance visible in three minutes.
+High-performing women (35–65) who look successful from the outside are quietly running parts of their lives in fight-or-flight without seeing the distance between where they are and where they want to be. "I'm fine" hides a measurable gap. The Gap Audit makes that gap visible in three minutes.
 
 ## Target User
-Female professionals and entrepreneurs, 35–65, who look successful and are quietly running out of themselves. She read the chapter or heard the talk, recognised herself, and wants to know how wide her gap is before talking to anyone.
+Female professionals and entrepreneurs, 35–65, who encountered the chapter or talk, recognised themselves, and want to know how wide their own gap is — privately, before talking to anyone.
 
 ## Core Objects
-- **Audit** — one visitor session; tracks status (in_progress / completed), captures email at the end.
-- **Area Response** — for each of six life areas (career, health, relationships, finances, growth, purpose): four readings: `now` (1–10), `want` (1–10), `stress` (1–10, fight/flight), `awareness` (1–10). Derived: `gap_score` (want − now), `stress_flag` (stress ≥ 7), `awareness_flag` (awareness ≤ 4).
-- **Gap Map** — computed from all six area responses: areas ranked by gap size, fight/flight and low-awareness zones flagged. Stored as ranked JSON + total gap.
+- **Assessment** — one audit session covering six life areas.
+- **Area Response** — per area: current score, desired score, stress level, awareness level.
+- **Gap Map** — computed result: areas ranked by priority, fight/flight zones flagged, low-awareness zones flagged.
+- **Lead** — email address captured at the end to save the Gap Map.
 
-## MVP (v1) — Checklist
-- [x] Landing page that introduces the audit and starts the flow
-- [x] Guided wizard: six areas, four readings each, persisted to DB as she goes
-- [x] Gap Map computed and rendered immediately after completion (ranked areas, stress/awareness flags, visual bars)
-- [x] Email capture at the end of the Gap Map — email saves to the audit record
-- [x] Named zones use the chapter's language: the current, fight/flight, the gap
-- [x] Works end-to-end with no login; seed demo data so results pages render for anonymous visitors
+Six life areas: Career, Health, Relationships, Finances, Growth, Purpose.
+Four readings each: Where are you now (1–10), Where do you want to be (1–10), How much runs on stress (1–10), How aware are you of what you feel there (1–10).
+
+## MVP (v1) Checklist
+- [ ] Six-area audit flow — all 24 readings collected across guided steps
+- [ ] Gap Map computed and displayed immediately after completion
+- [ ] Areas ranked by priority (gap size weighted by stress and low awareness)
+- [ ] Fight/flight zones and low-awareness zones flagged using chapter language ("the current," "fight/flight," "the gap")
+- [ ] Email capture screen after Gap Map is shown
+- [ ] Email persisted with link to saved Gap Map
+- [ ] Works end-to-end for anonymous visitor — no login wall
 
 ## Non-Goals (v1)
-- Accounts / login / user dashboards
-- Saving or revisiting past audits by the visitor
-- Courses, content, or community features
-- Payment or subscription
-- AI-generated narrative (later phase)
+- No accounts or login
+- No saved dashboard or return portal
+- No course, community, or coaching integration
+- No payment or billing
+- No AI-generated narrative (rule-based computation only)
 
 ## Success Criteria
-A first-time anonymous visitor lands, completes all six areas (completion — not drop-off), sees her ranked Gap Map with fight/flight and low-awareness zones flagged in the chapter's language, and leaves a real email address to keep it. The number to watch is completion-versus-drop-off, not signups.
+A woman who has never visited before lands on the page, completes all six areas in under four minutes, sees her Gap Map ranked with flagged zones, and leaves a real email address. Completion-versus-drop-off is the metric — not signups, not page views. One completed assessment with a real email is the proof the funnel works.

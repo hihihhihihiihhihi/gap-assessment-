@@ -1,49 +1,31 @@
--- Schema for docs/DATA_MODEL.md: audits, area_responses, gap_maps.
--- NOTE: the enum guards below are DO blocks on purpose — PostgreSQL does not
--- support `create type if not exists`, which aborts the entire script.
-do $$ begin
-  if not exists (select 1 from pg_type where typname = 'life_area') then
-    create type life_area as enum ('career','health','relationships','finances','growth','purpose');
-  end if;
-end $$;
-
-do $$ begin
-  if not exists (select 1 from pg_type where typname = 'audit_status') then
-    create type audit_status as enum ('in_progress','completed');
-  end if;
-end $$;
-
-
-create table if not exists audits (
+create table if not exists assessments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid,
-  session_token text not null default gen_random_uuid(),
-  status audit_status not null default 'in_progress',
-  email text,
+  status text not null default 'in_progress',
+  started_at timestamptz not null default now(),
   completed_at timestamptz,
   created_at timestamptz not null default now()
 );
-alter table audits enable row level security;
-drop policy if exists "audits_v1_read" on audits;
-create policy "audits_v1_read" on audits for select using (true);
-drop policy if exists "audits_v1_write" on audits;
-create policy "audits_v1_write" on audits for all using (true) with check (true);
+
+alter table assessments enable row level security;
+drop policy if exists "assessments_v1_read" on assessments;
+create policy "assessments_v1_read" on assessments for select using (true);
+drop policy if exists "assessments_v1_write" on assessments;
+create policy "assessments_v1_write" on assessments for all using (true) with check (true);
 
 create table if not exists area_responses (
   id uuid primary key default gen_random_uuid(),
+  assessment_id uuid not null references assessments(id) on delete cascade,
   user_id uuid,
-  audit_id uuid not null references audits(id) on delete cascade,
-  area life_area not null,
-  now_score numeric not null check (now_score between 1 and 10),
-  want_score numeric not null check (want_score between 1 and 10),
-  stress_level numeric not null check (stress_level between 1 and 10),
-  awareness_level numeric not null check (awareness_level between 1 and 10),
-  gap_score numeric generated always as (want_score - now_score) stored,
-  stress_flag boolean generated always as (stress_level >= 7) stored,
-  awareness_flag boolean generated always as (awareness_level <= 4) stored,
+  area text not null check (area in ('career','health','relationships','finances','growth','purpose')),
+  current_score int not null check (current_score between 1 and 10),
+  desired_score int not null check (desired_score between 1 and 10),
+  stress_level int not null check (stress_level between 1 and 10),
+  awareness_level int not null check (awareness_level between 1 and 10),
   created_at timestamptz not null default now(),
-  unique (audit_id, area)
+  unique (assessment_id, area)
 );
+
 alter table area_responses enable row level security;
 drop policy if exists "area_responses_v1_read" on area_responses;
 create policy "area_responses_v1_read" on area_responses for select using (true);
@@ -52,52 +34,67 @@ create policy "area_responses_v1_write" on area_responses for all using (true) w
 
 create table if not exists gap_maps (
   id uuid primary key default gen_random_uuid(),
+  assessment_id uuid not null unique references assessments(id) on delete cascade,
   user_id uuid,
-  audit_id uuid not null references audits(id) on delete cascade,
   ranked_areas jsonb not null,
-  total_gap numeric not null default 0,
-  ai_summary text,
-  ai_summary_source text,
-  ai_summary_confidence numeric,
-  ai_summary_review_status text default 'unreviewed',
-  created_at timestamptz not null default now(),
-  unique (audit_id)
+  overall_gap numeric not null,
+  created_at timestamptz not null default now()
 );
+
 alter table gap_maps enable row level security;
 drop policy if exists "gap_maps_v1_read" on gap_maps;
 create policy "gap_maps_v1_read" on gap_maps for select using (true);
 drop policy if exists "gap_maps_v1_write" on gap_maps;
 create policy "gap_maps_v1_write" on gap_maps for all using (true) with check (true);
 
-insert into audits (id, status, email, completed_at) values
-  ('a0000000-0000-4000-8000-000000000001', 'completed', 'sarah.demo@example.com', '2024-11-01T10:30:00Z'),
-  ('a0000000-0000-4000-8000-000000000002', 'completed', 'megan.demo@example.com', '2024-11-02T14:15:00Z'),
-  ('a0000000-0000-4000-8000-000000000003', 'completed', 'priya.demo@example.com', '2024-11-03T09:45:00Z')
-  on conflict (id) do nothing;
+create table if not exists leads (
+  id uuid primary key default gen_random_uuid(),
+  assessment_id uuid not null unique references assessments(id) on delete cascade,
+  user_id uuid,
+  email text not null,
+  created_at timestamptz not null default now()
+);
 
-insert into area_responses (audit_id, area, now_score, want_score, stress_level, awareness_level) values
-  ('a0000000-0000-4000-8000-000000000001', 'career', 6, 9, 5, 7),
-  ('a0000000-0000-4000-8000-000000000001', 'health', 3, 8, 9, 2),
-  ('a0000000-0000-4000-8000-000000000001', 'relationships', 5, 8, 8, 6),
-  ('a0000000-0000-4000-8000-000000000001', 'finances', 6, 8, 4, 7),
-  ('a0000000-0000-4000-8000-000000000001', 'growth', 6, 8, 3, 3),
-  ('a0000000-0000-4000-8000-000000000001', 'purpose', 7, 8, 4, 8),
-  ('a0000000-0000-4000-8000-000000000002', 'career', 8, 9, 7, 5),
-  ('a0000000-0000-4000-8000-000000000002', 'health', 7, 9, 4, 8),
-  ('a0000000-0000-4000-8000-000000000002', 'relationships', 4, 9, 7, 3),
-  ('a0000000-0000-4000-8000-000000000002', 'finances', 5, 8, 6, 6),
-  ('a0000000-0000-4000-8000-000000000002', 'growth', 7, 9, 3, 8),
-  ('a0000000-0000-4000-8000-000000000002', 'purpose', 5, 9, 8, 4),
-  ('a0000000-0000-4000-8000-000000000003', 'career', 5, 7, 8, 5),
-  ('a0000000-0000-4000-8000-000000000003', 'health', 4, 7, 6, 5),
-  ('a0000000-0000-4000-8000-000000000003', 'relationships', 6, 8, 5, 7),
-  ('a0000000-0000-4000-8000-000000000003', 'finances', 3, 8, 9, 2),
-  ('a0000000-0000-4000-8000-000000000003', 'growth', 6, 9, 4, 6),
-  ('a0000000-0000-4000-8000-000000000003', 'purpose', 4, 8, 7, 3)
-  on conflict (audit_id, area) do nothing;
+alter table leads enable row level security;
+drop policy if exists "leads_v1_read" on leads;
+create policy "leads_v1_read" on leads for select using (true);
+drop policy if exists "leads_v1_write" on leads;
+create policy "leads_v1_write" on leads for all using (true) with check (true);
 
-insert into gap_maps (audit_id, ranked_areas, total_gap) values
-  ('a0000000-0000-4000-8000-000000000001', '[{"area":"health","gap":5,"stress_flag":true,"awareness_flag":true},{"area":"relationships","gap":3,"stress_flag":true,"awareness_flag":false},{"area":"career","gap":3,"stress_flag":false,"awareness_flag":false},{"area":"growth","gap":2,"stress_flag":false,"awareness_flag":true},{"area":"finances","gap":2,"stress_flag":false,"awareness_flag":false},{"area":"purpose","gap":1,"stress_flag":false,"awareness_flag":false}]'::jsonb, 16),
-  ('a0000000-0000-4000-8000-000000000002', '[{"area":"relationships","gap":5,"stress_flag":true,"awareness_flag":true},{"area":"purpose","gap":4,"stress_flag":true,"awareness_flag":true},{"area":"finances","gap":3,"stress_flag":false,"awareness_flag":false},{"area":"career","gap":1,"stress_flag":true,"awareness_flag":false},{"area":"growth","gap":2,"stress_flag":false,"awareness_flag":false},{"area":"health","gap":2,"stress_flag":false,"awareness_flag":false}]'::jsonb, 17),
-  ('a0000000-0000-4000-8000-000000000003', '[{"area":"finances","gap":5,"stress_flag":true,"awareness_flag":true},{"area":"purpose","gap":4,"stress_flag":true,"awareness_flag":true},{"area":"career","gap":2,"stress_flag":true,"awareness_flag":false},{"area":"health","gap":3,"stress_flag":false,"awareness_flag":false},{"area":"relationships","gap":2,"stress_flag":false,"awareness_flag":false},{"area":"growth","gap":3,"stress_flag":false,"awareness_flag":false}]'::jsonb, 19)
-  on conflict (audit_id) do nothing;
+insert into assessments (id, status, started_at, completed_at) values
+  ('a0000000-0000-0000-0000-000000000001', 'completed', now() - interval '2 hours', now() - interval '1 hour'),
+  ('a0000000-0000-0000-0000-000000000002', 'completed', now() - interval '1 day', now() - interval '23 hours'),
+  ('a0000000-0000-0000-0000-000000000003', 'completed', now() - interval '3 days', now() - interval '2 days')
+on conflict (id) do nothing;
+
+insert into area_responses (assessment_id, area, current_score, desired_score, stress_level, awareness_level) values
+  ('a0000000-0000-0000-0000-000000000001', 'career', 6, 9, 8, 2),
+  ('a0000000-0000-0000-0000-000000000001', 'health', 5, 9, 7, 3),
+  ('a0000000-0000-0000-0000-000000000001', 'relationships', 7, 8, 4, 6),
+  ('a0000000-0000-0000-0000-000000000001', 'finances', 8, 9, 5, 7),
+  ('a0000000-0000-0000-0000-000000000001', 'growth', 4, 9, 6, 4),
+  ('a0000000-0000-0000-0000-000000000001', 'purpose', 3, 10, 9, 1),
+  ('a0000000-0000-0000-0000-000000000002', 'career', 7, 8, 5, 6),
+  ('a0000000-0000-0000-0000-000000000002', 'health', 6, 8, 6, 5),
+  ('a0000000-0000-0000-0000-000000000002', 'relationships', 4, 9, 8, 2),
+  ('a0000000-0000-0000-0000-000000000002', 'finances', 5, 8, 7, 3),
+  ('a0000000-0000-0000-0000-000000000002', 'growth', 7, 9, 4, 7),
+  ('a0000000-0000-0000-0000-000000000002', 'purpose', 6, 9, 5, 5),
+  ('a0000000-0000-0000-0000-000000000003', 'career', 8, 9, 3, 8),
+  ('a0000000-0000-0000-0000-000000000003', 'health', 3, 9, 9, 1),
+  ('a0000000-0000-0000-0000-000000000003', 'relationships', 6, 8, 6, 4),
+  ('a0000000-0000-0000-0000-000000000003', 'finances', 7, 10, 8, 2),
+  ('a0000000-0000-0000-0000-000000000003', 'growth', 5, 8, 5, 6),
+  ('a0000000-0000-0000-0000-000000000003', 'purpose', 4, 10, 7, 3)
+on conflict do nothing;
+
+insert into gap_maps (assessment_id, ranked_areas, overall_gap) values
+  ('a0000000-0000-0000-0000-000000000001', '[{"area":"purpose","gap_size":7,"priority_score":12.6,"stress_flag":true,"awareness_flag":true},{"area":"growth","gap_size":5,"priority_score":7.2,"stress_flag":false,"awareness_flag":false},{"area":"health","gap_size":4,"priority_score":6.16,"stress_flag":true,"awareness_flag":true},{"area":"career","gap_size":3,"priority_score":5.4,"stress_flag":true,"awareness_flag":true},{"area":"finances","gap_size":1,"priority_score":1.35,"stress_flag":false,"awareness_flag":false},{"area":"relationships","gap_size":1,"priority_score":1.2,"stress_flag":false,"awareness_flag":false}]'::jsonb, 3.5),
+  ('a0000000-0000-0000-0000-000000000002', '[{"area":"relationships","gap_size":5,"priority_score":9.0,"stress_flag":true,"awareness_flag":true},{"area":"finances","gap_size":3,"priority_score":5.13,"stress_flag":true,"awareness_flag":true},{"area":"career","gap_size":1,"priority_score":1.4,"stress_flag":false,"awareness_flag":false},{"area":"health","gap_size":2,"priority_score":3.12,"stress_flag":false,"awareness_flag":false},{"area":"growth","gap_size":2,"priority_score":2.24,"stress_flag":false,"awareness_flag":false},{"area":"purpose","gap_size":3,"priority_score":4.05,"stress_flag":false,"awareness_flag":false}]'::jsonb, 2.67),
+  ('a0000000-0000-0000-0000-000000000003', '[{"area":"health","gap_size":6,"priority_score":11.88,"stress_flag":true,"awareness_flag":true},{"area":"purpose","gap_size":6,"priority_score":10.2,"stress_flag":true,"awareness_flag":true},{"area":"finances","gap_size":3,"priority_score":5.94,"stress_flag":true,"awareness_flag":true},{"area":"growth","gap_size":3,"priority_score":3.78,"stress_flag":false,"awareness_flag":false},{"area":"relationships","gap_size":2,"priority_score":2.88,"stress_flag":false,"awareness_flag":false},{"area":"career","gap_size":1,"priority_score":1.17,"stress_flag":false,"awareness_flag":false}]'::jsonb, 3.5)
+on conflict (assessment_id) do nothing;
+
+insert into leads (assessment_id, email) values
+  ('a0000000-0000-0000-0000-000000000001', 'sarah.demo@example.com'),
+  ('a0000000-0000-0000-0000-000000000002', 'michaela.demo@example.com')
+on conflict (assessment_id) do nothing;

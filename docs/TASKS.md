@@ -1,48 +1,60 @@
-# Tasks
+# Tasks — Sprints
 
-## Sprint 1 — Foundation + Audit Engine
-**Goal:** DB schema live, 6-area wizard working end-to-end with persistence.
-- [ ] Create migration SQL (audits, area_responses, gap_maps) + seed demo rows
-- [ ] Build data-access layer (`lib/data/`): create audit, save area response, fetch audit + responses
-- [ ] Build scoring module (`lib/scoring/gap-calculator.ts`): gap_score, flags, ranking
-- [ ] Landing page: intro copy + "Start the Audit" button → creates audit, redirects to first area
-- [ ] Wizard: one area per step, four sliders (now, want, stress, awareness), auto-save to DB, progress indicator, next/back
-- [ ] All six areas accessible; incomplete audit saved as in_progress
-- **DoD:** Visitor starts audit, completes all six areas, responses persist in DB. Demo rows render on any read.
+## Sprint 1: Data + Audit Flow
+**Goal:** A visitor can start an assessment, complete all six areas, and every reading persists to the database.
 
-## Sprint 2 — Gap Map + Email Capture ← v1 FUNCTIONAL MILESTONE
-**Goal:** Full success scenario works end-to-end for anonymous visitor.
-- [x] After sixth area, compute Gap Map server-side (rank by gap, flag stress ≥ 7 and awareness ≤ 4)
-- [x] Insert gap_maps row with ranked_areas JSON + total_gap
-- [x] Results page: ranked area bars (gap width), fight/flight zone badges, low-awareness zone badges, total gap — in the chapter's language (the current, fight/flight, the gap)
-- [x] Email capture card on results page: "Leave your email to keep your Gap Map" → validates + saves to audits.email → confirmation state
-- [x] Mark audit status = completed, set completed_at
-- **DoD:** Anonymous visitor completes all six areas, sees her ranked Gap Map with flags, leaves email, email persisted. This is the v1 success scenario.
+- [ ] Create Supabase tables (assessments, area_responses, gap_maps, leads) with RLS + seed data
+- [ ] Build `lib/data/` access layer — create assessment, upsert area response, fetch responses
+- [ ] Build intro page (`/`) with "Begin your Gap Audit" CTA
+- [ ] Build `/audit/[area]` — four sliders (current, desired, stress, awareness) + progress bar + Next/Back
+- [ ] Persist each area response on Next; update assessment status
+- [ ] Seed 3 demo assessments with full readings for demo rendering
 
-## Sprint 3 — Polish + Deploy
-**Goal:** Production-ready UX, all five states handled, deployed.
-- [ ] Loading states on every save and compute step
-- [ ] Empty state: if results page loads with no audit (direct visit) — redirect to start
-- [ ] Error state: save failure shows retry, not silent loss
-- [ ] Partial state: in-progress audit resume (session_token cookie)
-- [ ] Mobile-responsive wizard and results
-- [ ] Analytics events: audit_started, area_completed, audit_completed, email_captured, drop-off point
-- [ ] Deploy to Vercel; verify live URL returns 200 for anonymous visitor
-- **DoD:** Deployed app; success scenario passes on live URL; loading/empty/error/partial all handled.
+**DoD:** Visitor completes 6 area screens; 6 area_responses rows exist in DB with correct assessment_id; assessment status = 'completed'.
 
-## Sprint 4 — Lock It Down
-**Goal:** Owner-scoped security before real traffic.
+## Sprint 2: Gap Map Computation + Display ★ v1 FUNCTIONAL
+**Goal:** Completed assessment produces a ranked, flagged Gap Map — the full funnel works end-to-end.
+
+- [ ] Build `lib/gap-map/compute.ts` — scoring, ranking, flagging logic
+- [ ] Compute unit tests (gap_size, stress_flag, awareness_flag, priority_score, ranking)
+- [ ] Build `/gap-map` page — render ranked areas with zone flags and chapter-language labels
+- [ ] Persist gap_map row on completion
+- [ ] Build GapMapChart visual (bar/radar) — loading, empty, error states
+- [ ] Wire navigation: final area → compute → display Gap Map
+
+**DoD:** A visitor who completes all six areas sees her Gap Map — areas ranked, fight/flight and low-awareness zones flagged, overall gap shown. This is the v1 functional milestone.
+
+## Sprint 3: Email Capture + Polish
+**Goal:** Visitor leaves email after seeing Gap Map; full funnel complete.
+
+- [ ] Build EmailCapture component on `/gap-map` page (post-result prompt)
+- [ ] Server action: insert lead row with validated email
+- [ ] Build `/saved` confirmation page
+- [ ] Handle empty/error states for email submission (invalid email, network error, duplicate)
+- [ ] Add analytics events (started, area_completed, completed, gap_map_viewed, email_submitted, drop)
+- [ ] Mobile responsive pass — all screens tested at 375px width
+- [ ] Copy review — ensure chapter voice ("the current," "the gap," "fight/flight")
+
+**DoD:** A stranger lands on `/`, completes six areas, sees Gap Map, enters email, sees confirmation. Lead row exists in DB. Drop-off events fire correctly.
+
+## Sprint 4: Lock It Down (later)
 - [ ] Add Supabase Auth (email/password + magic link)
-- [ ] Replace permissive RLS with `auth.uid() = user_id` policies on all tables
-- [ ] Set user_id on audit creation from auth context
-- [ ] Rate limit: 5 audits per IP per hour
-- [ ] Security pass: injection, XSS, PII exposure, rate-limiting — state what was and wasn't verified
-- **DoD:** A visitor's audit is only visible to her; anonymous permissive access removed; rate limit active.
+- [ ] Replace permissive RLS with owner-scoped policies
+- [ ] Add rate-limiting on assessment creation
+- [ ] Leads table: insert-only from client, read only for authenticated owner
+- [ ] PII protection review
 
-## Gantt
+## Sprint 5: Narrative + Routing (later)
+- [ ] AI narrative generation for Gap Map (value + source + confidence + review_status)
+- [ ] Email sending tool (named, approved)
+- [ ] CRM routing to Phoenix Realm / Theta Collective
+- [ ] Audit log table + logging
+
+## Text Gantt
 ```
-Sprint 1: [====] Foundation + Audit Engine
-Sprint 2:      [====] Gap Map + Email Capture  ← v1 functional
-Sprint 3:           [====] Polish + Deploy
-Sprint 4:                [====] Lock It Down
+Sprint 1  ████████  Data + Audit Flow
+Sprint 2  ████████  Gap Map + Display        ★ v1 functional
+Sprint 3  ████████  Email Capture + Polish
+Sprint 4  ░░░░░░░░  Lock It Down (later)
+Sprint 5  ░░░░░░░░  Narrative + Routing (later)
 ```

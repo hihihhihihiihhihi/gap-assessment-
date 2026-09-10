@@ -1,55 +1,63 @@
 # Architecture
 
 ## Stack
-Next.js 14 (App Router) · Supabase (Postgres) · Vercel deploy.
+Next.js 15 (App Router) + Supabase (Postgres) + Vercel.
 
-## Build Sequence
-**Now:** DB schema + data-access layer → audit wizard (6 areas × 4 readings, persisted) → Gap Map computation + results view → email capture.
-**Next:** AI narrative summary in the chapter's voice → polish all UI states → deploy.
-**Later:** Lock it down — auth, owner-scoped RLS, rate limiting, lead routing to Phoenix Realm / Theta Collective.
+## Build Now vs Later
+**Now:** audit flow, Gap Map computation, email capture, seed demo data, anonymous access.
+**Later:** accounts, return portal, AI narrative summaries, analytics dashboard, Phoenix Realm / Theta Collective lead routing.
 
-## Key User Action Flow
-1. Visitor lands on home page → taps "Start the Audit"
-2. Wizard presents one area at a time (career → health → relationships → finances → growth → purpose) — four slider inputs per area, auto-saves each response to DB
-3. After sixth area, server computes the Gap Map (rank by gap, flag stress ≥ 7 and awareness ≤ 4)
-4. Results page renders the Gap Map: ranked bars, fight/flight zones, low-awareness zones, total gap — in the chapter's language
-5. Email capture card: "Leave your email to keep your Gap Map" → saves email to audit record → confirmation
+## Key User Flow (one action)
+1. Visitor lands on `/` — sees intro copy + "Begin" button.
+2. Steps through six area screens (4 sliders each) — progress bar persists to DB on each step.
+3. Completes final area → `/gap-map` renders computed result: ranked areas, flagged zones, chapter-language labels.
+4. Sees email capture prompt: "Leave your email to keep your Gap Map."
+5. Submits email → `/saved` confirms, stores lead.
 
-## Nav Shell
-Single guided flow (landing → wizard → results → email). No sidebar — this is a linear wizard, not a multi-section app.
+## Responsive Nav
+Single-flow tool — no sidebar. Linear step progression with a top progress bar. Mobile-first; each area screen is one viewport with four sliders and a Next button.
 
 ## Layer Plan
-1. **Data layer** (`lib/data/`): all DB reads/writes — audits, area_responses, gap_maps. Nothing inline in UI.
-2. **App logic** (`lib/scoring/`): gap calculator, flag logic, ranking — pure functions, server-runnable.
-3. **Smart features** (`lib/ai/`, later): AI narrative summary of the Gap Map in the chapter's voice.
+1. **Data** — Postgres tables for assessments, area_responses, gap_maps, leads. All reads/writes through `lib/data/`.
+2. **App Logic** — Gap Map computation (rule-based scoring) in `lib/gap-map/`. Server actions for persisting responses.
+3. **Smart Features** — (later) AI narrative generation using stored Gap Map context.
 
-## Why the Core Runs Without AI
-Gap Map ranking and flags are pure arithmetic (gap = want − now; stress_flag = stress ≥ 7; awareness_flag = awareness ≤ 4; sort by gap descending). The AI layer (narrative summary) is additive — the Gap Map renders fully without it.
+## Why Core Runs Without AI
+The Gap Map is pure arithmetic: gap = desired − current; stress flag = stress ≥ 7; awareness flag = awareness ≤ 3; priority = gap × (1 + stress/10) × (1 + (5 − awareness)/10). No model call needed. AI narrative is a later enhancement.
 
 ## Repo Structure
 ```
-src/
-  app/
-    page.tsx                  # landing + start
-    audit/
-      [area]/page.tsx         # per-area wizard step
-    results/
-      page.tsx                 # Gap Map + email capture
-  components/
-    audit/                     # slider inputs, area card, progress
-    results/                   # gap bar, flag badge, ranked list
-    ui/                        # shared primitives
-  lib/
-    data/                      # audits.ts, area-responses.ts, gap-maps.ts
-    scoring/                   # gap-calculator.ts
-    ai/                        # summary.ts (later)
-  tests/                       # beside the code they test
+app/
+  page.tsx                  # intro / begin
+  audit/[area]/page.tsx     # one area per step
+  gap-map/page.tsx          # result display
+  saved/page.tsx            # email confirmation
+components/
+  AreaSlider.tsx
+  GapMapChart.tsx
+  ZoneFlag.tsx
+  EmailCapture.tsx
+lib/
+  data/                     # all DB access
+    assessments.ts
+    area_responses.ts
+    gap_maps.ts
+    leads.ts
+  gap-map/                  # scoring + ranking logic
+    compute.ts
+  ai/                       # (later) narrative generation
+    narrative.ts
+  types/                    # shared types
+__tests__/
+  gap-map/compute.test.ts
 ```
 
 ## Module Map
-| Module | Responsibility | Data it owns | Build order |
-|---|---|---|---|
-| **audit-engine** | Wizard flow, 6 areas × 4 readings, persistence | audits, area_responses | 1st |
-| **gap-map** | Compute ranking + flags from responses | gap_maps | 2nd |
-| **results-view** | Render Gap Map visually + email capture | reads gap_maps, writes email on audits | 2nd |
-| **ai-summary** (later) | Narrative summary in chapter's voice | ai_summary field on gap_maps | 3rd |
+
+| Module | Responsibility | Data owned | Build order |
+|--------|---------------|------------|-------------|
+| **audit** | Collect 24 readings across 6 areas, persist per step | assessments, area_responses | 1st |
+| **gap-map** | Compute, rank, flag zones from readings | gap_maps | 2nd |
+| **lead-capture** | Capture email after Gap Map, persist lead | leads | 3rd |
+| **narrative** (later) | Generate personalised Gap Map summary text | — | later |
+| **auth** (later) | Accounts, return portal, owner-scoped data | — | later |
