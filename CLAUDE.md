@@ -15,6 +15,7 @@
 - GapFinder-inspired redesign adopted: results page now includes a radar chart, alignment score, and explicit strengths/gaps sections.
 - All database access is now routed through a server-only service-role client (Sprint 4).
 - Gap map is gated behind email submission — user must provide email before viewing the gap map.
+- Gap audit publication now automatically emails the result to the user.
 
 ## Architecture
 
