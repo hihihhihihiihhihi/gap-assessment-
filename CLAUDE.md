@@ -14,6 +14,7 @@
 
 - GapFinder-inspired redesign adopted: results page now includes a radar chart, alignment score, and explicit strengths/gaps sections.
 - All database access is now routed through a server-only service-role client (Sprint 4).
+- Gap map is gated behind email submission — user must provide email before viewing the gap map.
 
 ## Architecture
 
@@ -33,3 +34,4 @@
 - sprint 3 verified end-to-end against the live database
 - Email capture component and v1 MVP checklist are marked complete.
 - Gap Map is now automatically emailed to the user when they provide their email address.
+- After email is submitted, it receives a next-step action (the emailed gap map itself serves as that next step).
