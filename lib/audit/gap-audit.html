@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Gap Audit — Glenda Tan</title>
+<meta name="description" content="A 7-minute self-assessment for high-achieving professionals who look fine on the outside — and feel depleted on the inside." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --cream-deep: #F2ECE3;
+    --teal: #1F4E4A;
+    --teal-soft: #2E6B66;
+    --terracotta: #C97B5A;
+    --charcoal: #2B2B2B;
+    --muted: #6B6B6B;
+    --line: #E2DCD2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100%;
+  }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1, h2, h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--teal);
+  }
+  h1 { font-size: 2.4rem; margin-bottom: 12px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.6rem; margin-bottom: 16px; }
+  h3 { font-size: 1.1rem; margin-bottom: 8px; letter-spacing: 0.02em; }
+  p { margin-bottom: 16px; color: var(--charcoal); }
+  .muted { color: var(--muted); font-size: 0.92rem; }
+  .small { font-size: 0.85rem; color: var(--muted); }
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  .rule { width: 40px; height: 1px; background: var(--terracotta); margin: 28px 0; }
+  button, .btn {
+    display: inline-block;
+    background: var(--teal);
+    color: var(--cream);
+    border: none;
+    padding: 16px 32px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.92rem;
+    letter-spacing: 0.05em;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.15s ease;
+    text-decoration: none;
+    border-radius: 2px;
+  }
+  button:hover, .btn:hover { background: var(--teal-soft); }
+  button:active { transform: translateY(1px); }
+  button:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--teal);
+    border: 1px solid var(--teal);
+  }
+  .btn-ghost:hover { background: var(--teal); color: var(--cream); }
+  .link {
+    color: var(--teal);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .screen { display: none; animation: fade 0.5s ease; }
+  .screen.active { display: block; }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .progress {
+    height: 2px;
+    background: var(--line);
+    margin-bottom: 40px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--terracotta);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  .q { padding: 20px 0 24px; border-bottom: 1px solid var(--line); }
+  .q:last-child { border-bottom: none; }
+  .q-text {
+    font-size: 1.05rem;
+    margin-bottom: 16px;
+    color: var(--charcoal);
+    font-weight: 400;
+    line-height: 1.55;
+  }
+  .scale { display: flex; justify-content: space-between; gap: 8px; }
+  .scale label {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    padding: 12px 4px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    transition: all 0.2s ease;
+    user-select: none;
+    background: #fff;
+  }
+  .scale label:hover { border-color: var(--teal-soft); color: var(--teal); }
+  .scale input { display: none; }
+  .scale input:checked + label,
+  .scale label.checked {
+    background: var(--teal);
+    color: var(--cream);
+    border-color: var(--teal);
+  }
+  .scale-num {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+  }
+  .scale-word { font-size: 0.72rem; letter-spacing: 0.03em; }
+  .section-head { margin-bottom: 8px; padding-top: 8px; }
+  .section-head h3 {
+    color: var(--terracotta);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .section-head p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: var(--teal);
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+  }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 36px; gap: 12px; }
+  .nav .right { margin-left: auto; }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .field input[type="text"],
+  .field input[type="email"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: var(--charcoal);
+    border-radius: 2px;
+    font-weight: 300;
+  }
+  .field input:focus { outline: none; border-color: var(--teal); }
+  .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin: 20px 0 24px;
+    cursor: pointer;
+  }
+  .check input { margin-top: 4px; }
+  table.subtotals {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.9rem;
+  }
+  table.subtotals td { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  table.subtotals td:last-child { text-align: right; color: var(--teal); font-weight: 500; }
+  .quote {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--teal);
+    border-left: 2px solid var(--terracotta);
+    padding-left: 20px;
+    margin: 32px 0;
+    line-height: 1.5;
+  }
+  .cta-block {
+    background: var(--cream-deep);
+    padding: 32px 28px;
+    margin-top: 40px;
+    border-radius: 2px;
+  }
+  .cta-block h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--teal);
+    margin-bottom: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .cta-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .cta-buttons .btn { text-align: center; }
+  .footer-note {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+  .success-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1px solid var(--terracotta);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    color: var(--terracotta);
+    font-size: 1.6rem;
+    font-family: 'Playfair Display', serif;
+  }
+  .loading {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 480px) {
+    h1 { font-size: 1.9rem; }
+    .wrap { padding: 32px 20px 60px; }
+    .scale label { padding: 10px 2px; }
+    .scale-word { display: none; }
+    .scale-num { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- SCREEN 1: WELCOME -->
+  <section class="screen active" id="screen-welcome">
+    <div class="eyebrow">Phoenix Realm Institute</div>
+    <h1>The Gap Audit</h1>
+    <h2 style="font-weight:400; font-size:1.25rem; color:var(--charcoal); margin-bottom:24px;">How far are you running from yourself?</h2>
+    <div class="rule"></div>
+    <p>A 7-minute self-assessment for high-achieving professionals who look fine on the outside — and feel depleted on the inside.</p>
+    <p class="muted">From Glenda Tan, founder of Phoenix Realm Institute.</p>
+    <div class="nav">
+      <span></span>
+      <button class="right" onclick="goTo('screen-how')">Begin the Audit</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: HOW TO USE -->
+  <section class="screen" id="screen-how">
+    <div class="progress"><div class="progress-bar" style="width:0%"></div></div>
+    <div class="eyebrow">Before you begin</div>
+    <h2>How to use this</h2>
+    <p>Read each statement and choose the number that best reflects how true it has been for you <strong>over the past 6 months</strong> — not how you'd like it to be, and not how it looks from the outside.</p>
+    <table class="subtotals" style="margin: 24px 0;">
+      <tr><td>1 — Never true</td><td></td></tr>
+      <tr><td>2 — Rarely true</td><td></td></tr>
+      <tr><td>3 — Sometimes true</td><td></td></tr>
+      <tr><td>4 — Often true</td><td></td></tr>
+      <tr><td>5 — Almost always true</td><td></td></tr>
+    </table>
+    <p class="small">Answer quickly. Your first instinct is usually the honest one.</p>
+    <div class="nav">
+      <button class="btn-ghost" onclick="goTo('screen-welcome')">Back</button>
+      <button class="right" onclick="goTo('screen-q1')">Start</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: QUESTIONS 1–4 -->
+  <section class="screen" id="screen-q1">
+    <div class="progress"><div class="progress-bar" style="width:25%"></div></div>
+    <div class="section-head">
+      <h3>Section 1 — The Mask</h3>
+      <p>The version of you the world sees — and rewards.</p>
+    </div>
+    <div id="qgroup1"></div>
+    <div class="nav">
+      <button class="btn-ghost" onclick="goTo('screen-how')">Back</button>
+      <button class="right" id="next1" disabled onclick="goTo('screen-q2')">Continue</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: QUESTIONS 5–8 -->
+  <section class="screen" id="screen-q2">
+    <div class="progress"><div class="progress-bar" style="width:50%"></div></div>
+    <div class="section-head">
+      <h3>Section 2 — The Current</h3>
+      <p>The pull you've been swimming against — and calling it ambition.</p>
+    </div>
+    <div id="qgroup2"></div>
+    <div class="nav">
+      <button class="btn-ghost" onclick="goTo('screen-q1')">Back</button>
+      <button class="right" id="next2" disabled onclick="goTo('screen-q3')">Continue</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 5: QUESTIONS 9–12 -->
+  <section class="screen" id="screen-q3">
+    <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
+    <div class="section-head">
+      <h3>Section 3 — The Gap</h3>
+      <p>The distance between what happened — and what you've let yourself understand about it.</p>
+    </div>
+    <div id="qgroup3"></div>
+    <div class="nav">
+      <button class="btn-ghost" onclick="goTo('screen-q2')">Back</button>
+      <button class="right" id="next3" disabled onclick="goTo('screen-email')">Continue</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 6: EMAIL CAPTURE -->
+  <section class="screen" id="screen-email">
+    <div class="progress"><div class="progress-bar" style="width:90%"></div></div>
+    <div class="eyebrow">Almost there</div>
+    <h2>Where shall I send your result?</h2>
+    <p>Your audit is complete. Enter your email below and I'll send you your score, your personalised reading, and a short letter from me about what it took to write this.</p>
+    <form id="emailForm" onsubmit="submitEmail(event)">
+      <div class="field">
+        <label for="firstName">First name <span style="text-transform:none; letter-spacing:0;">(optional)</span></label>
+        <input type="text" id="firstName" name="firstName" autocomplete="given-name" />
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autocomplete="email" />
+      </div>
+      <label class="check">
+        <input type="checkbox" id="consent" checked />
+        <span>Yes, send me my results and occasional letters from Glenda. No noise, no spam.</span>
+      </label>
+      <div class="nav" style="margin-top:0;">
+        <button class="btn-ghost" type="button" onclick="goTo('screen-q3')">Back</button>
+        <button class="right" type="submit" id="submitBtn">Send My Results</button>
+      </div>
+      <p class="small" id="formError" style="display:none; color:#B04A3A; margin-top:16px;"></p>
+    </form>
+  </section>
+
+  <!-- SCREEN 7: THANK YOU -->
+  <section class="screen" id="screen-thanks">
+    <div class="progress"><div class="progress-bar" style="width:100%"></div></div>
+    <div class="success-icon">✓</div>
+    <div class="eyebrow" style="text-align:center;">Audit complete</div>
+    <h2 style="text-align:center;">Thank you. Your results are on their way.</h2>
+    <p style="text-align:center;">I read every response personally. Your score and your personalised reading will arrive in your inbox shortly — usually within 24 hours.</p>
+    <p class="small" style="text-align:center;">If you don't see it, please check your spam or promotions folder.</p>
+
+    <div class="quote" style="margin-top:40px;">
+      You cannot outwork what you haven't faced. I tried for ten years.<br />
+      The current is only a current while you're swimming against it.
+    </div>
+
+    <div class="cta-block">
+      <h3>While you wait</h3>
+      <p>If any part of this audit felt like being described rather than read, that is usually the beginning of the conversation.</p>
+      <p><strong>The Theta Collective</strong> is a Phoenix Realm community and a safe space for women to learn their own language — so that the first person they can speak honestly to is themselves.</p>
+      <div class="cta-buttons">
+        <a class="btn" id="ctaTheta" href="#">Join The Theta Collective</a>
+        <a class="btn btn-ghost" id="ctaLinkedIn" href="#">Connect with Glenda on LinkedIn</a>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span class="link" onclick="retake()">Retake the audit</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — edit these before deploying
+   ============================================================ */
+const CONFIG = {
+  FORM_ENDPOINT: "https://formspree.io/f/xjyvqkpz",
+  CTA_THETA_URL: "#",
+  LINKEDIN_URL: "https://linkedin.com/in/glendatan",
+  AUTHOR_NAME: "Glenda Tan",
+  ORG_NAME: "Phoenix Realm Institute"
+};
+
+/* ============================================================
+   QUESTIONS
+   ============================================================ */
+const SECTIONS = [
+  {
+    id: "qgroup1",
+    nextBtn: "next1",
+    storeKey: "s1",
+    sectionLabel: "The Mask",
+    questions: [
+      "I can't remember the last time I took a real break without feeling guilty.",
+      "When someone asks how I am, I say 'fine' automatically — before I've actually checked.",
+      "I measure my worth by my output. A good day is a productive day.",
+      "If I'm honest, I would struggle to describe who I am outside of my role."
+    ]
+  },
+  {
+    id: "qgroup2",
+    nextBtn: "next2",
+    storeKey: "s2",
+    sectionLabel: "The Current",
+    questions: [
+      "I carry a low, constant sense of dread I can't quite name.",
+      "I can't slow down — even when I want to — without feeling like something will catch me.",
+      "I've been tired for so long that I've stopped noticing it. It's just my baseline.",
+      "Rest feels like falling behind."
+    ]
+  },
+  {
+    id: "qgroup3",
+    nextBtn: "next3",
+    storeKey: "s3",
+    sectionLabel: "The Gap",
+    questions: [
+      "There's a difficult experience I've never fully processed. I just outworked it.",
+      "Anger, impatience, or shutting down are the only emotions I really let out. I don't have words for the rest.",
+      "I'm successful — and I feel further from myself than I've ever been.",
+      "I'm afraid of what I'd find if I actually stopped."
+    ]
+  }
+];
+
+const SCALE = [
+  { n: 1, w: "Never" },
+  { n: 2, w: "Rarely" },
+  { n: 3, w: "Sometimes" },
+  { n: 4, w: "Often" },
+  { n: 5, w: "Almost always" }
+];
+
+/* ============================================================
+   BAND (for your reference email only — not shown to user)
+   ============================================================ */
+function bandFor(total) {
+  if (total <= 24) return "Clear Water (12–24)";
+  if (total <= 36) return "Strong Current (25–36)";
+  if (total <= 48) return "Running on Empty (37–48)";
+  return "Against the Current (49–60)";
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let answers = { s1: [null,null,null,null], s2: [null,null,null,null], s3: [null,null,null,null] };
+
+/* ============================================================
+   BUILD QUESTIONS
+   ============================================================ */
+function buildQuestions() {
+  SECTIONS.forEach((section, si) => {
+    const group = document.getElementById(section.id);
+    group.innerHTML = "";
+    section.questions.forEach((qText, qi) => {
+      const q = document.createElement("div");
+      q.className = "q";
+      const label = document.createElement("div");
+      label.className = "q-text";
+      label.textContent = `${si * 4 + qi + 1}. ${qText}`;
+      q.appendChild(label);
+
+      const scale = document.createElement("div");
+      scale.className = "scale";
+      SCALE.forEach(opt => {
+        const lbl = document.createElement("label");
+        lbl.setAttribute("for", `q${si}-${qi}-${opt.n}`);
+        lbl.innerHTML = `<span class="scale-num">${opt.n}</span><span class="scale-word">${opt.w}</span>`;
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = `q${si}-${qi}`;
+        input.id = `q${si}-${qi}-${opt.n}`;
+        input.value = opt.n;
+        input.addEventListener("change", () => onAnswer(si, qi, opt.n));
+        lbl.prepend(input);
+        scale.appendChild(lbl);
+      });
+      q.appendChild(scale);
+      group.appendChild(q);
+    });
+  });
+}
+
+function onAnswer(si, qi, value) {
+  const key = ["s1","s2","s3"][si];
+  answers[key][qi] = parseInt(value, 10);
+  checkSection(si);
+}
+
+function checkSection(si) {
+  const key = ["s1","s2","s3"][si];
+  const complete = answers[key].every(v => v !== null);
+  const btn = document.getElementById(SECTIONS[si].nextBtn);
+  if (btn) btn.disabled = !complete;
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goTo(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const target = document.getElementById(id);
+  if (target) target.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function totalScore() {
+  return [...answers.s1, ...answers.s2, ...answers.s3].reduce((a, b) => a + (b || 0), 0);
+}
+function sectionScores() {
+  return {
+    s1: answers.s1.reduce((a, b) => a + (b || 0), 0),
+    s2: answers.s2.reduce((a, b) => a + (b || 0), 0),
+    s3: answers.s3.reduce((a, b) => a + (b || 0), 0)
+  };
+}
+
+/* ============================================================
+   EMAIL SUBMIT — sends results to Glenda, not to user
+   ============================================================ */
+async function submitEmail(e) {
+  e.preventDefault();
+  const firstName = document.getElementById("firstName").value.trim() || "—";
+  const email = document.getElementById("email").value.trim();
+  const consent = document.getElementById("consent").checked;
+  const btn = document.getElementById("submitBtn");
+  const errEl = document.getElementById("formError");
+  errEl.style.display = "none";
+
+  if (!email) return;
+
+  const total = totalScore();
+  const sections = sectionScores();
+  const band = bandFor(total);
+
+  const flat = [...answers.s1, ...answers.s2, ...answers.s3];
+  const answerLines = flat.map((v, i) => `Q${i + 1}: ${v}`).join(" · ");
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>Sending…';
+
+  const payload = {
+    _subject: `Gap Audit submission — ${firstName} (score ${total}/60, ${band})`,
+    firstName: firstName,
+    email: email,
+    consent: consent ? "Yes" : "No",
+    totalScore: `${total} / 60`,
+    band: band,
+    section1_Mask: `${sections.s1} / 20`,
+    section2_Current: `${sections.s2} / 20`,
+    section3_Gap: `${sections.s3} / 20`,
+    allAnswers: answerLines,
+    submittedAt: new Date().toLocaleString("en-GB", { timeZone: "Europe/London" })
+  };
+
+  try {
+    const res = await fetch(CONFIG.FORM_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Submission failed with status " + res.status);
+    try {
+      localStorage.removeItem("gap_answers");
+      localStorage.removeItem("gap_email");
+    } catch (err) {}
+    goTo("screen-thanks");
+  } catch (err) {
+    console.error("Formspree error:", err);
+    errEl.textContent = "Something went wrong sending your results. Please try again, or email glendayn@gmail.com directly.";
+    errEl.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Send My Results";
+  }
+}
+
+/* ============================================================
+   RETAKE
+   ============================================================ */
+function retake() {
+  answers = { s1: [null,null,null,null], s2: [null,null,null,null], s3: [null,null,null,null] };
+  document.querySelectorAll('input[type="radio"]').forEach(i => i.checked = false);
+  document.querySelectorAll('.scale label').forEach(l => l.classList.remove("checked"));
+  ["next1","next2","next3"].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.disabled = true;
+  });
+  document.getElementById("emailForm").reset();
+  goTo("screen-welcome");
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+buildQuestions();
+["screen-q1","screen-q2","screen-q3"].forEach((sid, i) => checkSection(i));
+
+document.getElementById("ctaTheta").href = CONFIG.CTA_THETA_URL;
+document.getElementById("ctaLinkedIn").href = CONFIG.LINKEDIN_URL;
+</script>
+</body>
+</html>
