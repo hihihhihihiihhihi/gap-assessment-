@@ -217,7 +217,7 @@ export default function AreaForm({
               : error
                 ? "Retry"
                 : isLast
-                  ? "See my Gap Map"
+                  ? "Get my Gap Map"
                   : "Next →"}
           </button>
         </div>

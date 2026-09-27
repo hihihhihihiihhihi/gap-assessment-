@@ -56,39 +56,14 @@ function areaRow(area: RankedArea): string {
   </tr>`;
 }
 
-/**
- * The single ask, stated once at the end (voice.md).
- * Leads with what staying costs, never implies she is broken. Falls back to
- * "reply and tell me" when no destination is configured, so the email never
- * carries a dead link.
- */
-function ctaBlock(ctaUrl?: string): string {
-  const lead = `<p style="font-family:${SANS};font-size:16px;line-height:1.65;color:${INK};margin:0 0 18px;">Most women read a map like this, recognise every line of it, and carry on exactly as before. That is the expensive option.</p>`;
-
-  if (!ctaUrl) {
-    return `${lead}<p style="font-family:${SANS};font-size:16px;line-height:1.65;color:${INK};margin:0 0 18px;">If one of those areas surprised you, reply and tell me which one. I read every reply myself.</p>`;
-  }
-
-  return `${lead}
-  <p style="font-family:${SANS};font-size:16px;line-height:1.65;color:${INK};margin:0 0 20px;">The Theta Collective is twelve weeks with women who are done performing. If any part of this felt like being described rather than read, that is usually where the conversation starts.</p>
-  <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-    <tr><td style="background:${UMBER};">
-      <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;padding:13px 26px;font-family:${SANS};font-size:15px;font-weight:600;color:#FDFBD4;text-decoration:none;">Take a look at The Theta Collective</a>
-    </td></tr>
-  </table>
-  <p style="font-family:${SANS};font-size:15px;line-height:1.65;color:${STONE};margin:0 0 18px;">Not ready for that? Reply and tell me which area surprised you. I read every reply myself.</p>`;
-}
-
 export function resultsHtml({
   areas,
   totalGap,
   resultsUrl,
-  ctaUrl,
 }: {
   areas: RankedArea[];
   totalGap: number;
   resultsUrl?: string;
-  ctaUrl?: string;
 }): string {
   const widest = areas[0];
   const fightFlight = areas.filter((a) => a.stress_flag);
@@ -163,7 +138,7 @@ export function resultsHtml({
 
         <tr><td style="padding:10px 28px 30px;">
           <p style="font-family:${SERIF};font-size:22px;line-height:1.4;color:${UMBER};margin:18px 0 20px;font-style:italic;">You cannot close a gap you cannot see. You have just seen it.</p>
-          ${ctaBlock(ctaUrl)}
+          <p style="font-family:${SANS};font-size:16px;line-height:1.65;color:${INK};margin:0 0 18px;">If one of those areas surprised you, reply and tell me which one.</p>
           <p style="font-family:${SANS};font-size:16px;line-height:1.65;color:${INK};margin:0;">Glenda</p>
           ${link}
         </td></tr>
@@ -183,11 +158,9 @@ export function resultsHtml({
 export function resultsText({
   areas,
   totalGap,
-  ctaUrl,
 }: {
   areas: RankedArea[];
   totalGap: number;
-  ctaUrl?: string;
 }): string {
   const lines = ["Here is what you just told yourself.", ""];
   const widest = areas[0];
@@ -212,26 +185,9 @@ export function resultsText({
     "",
     "You cannot close a gap you cannot see. You have just seen it.",
     "",
-    "Most women read a map like this, recognise every line of it, and carry on exactly as before. That is the expensive option.",
+    "If one of those areas surprised you, reply and tell me which one.",
     "",
+    "Glenda",
   );
-
-  if (ctaUrl) {
-    lines.push(
-      "The Theta Collective is twelve weeks with women who are done performing. If any part of this felt like being described rather than read, that is usually where the conversation starts.",
-      "",
-      ctaUrl,
-      "",
-      "Not ready for that? Reply and tell me which area surprised you. I read every reply myself.",
-      "",
-    );
-  } else {
-    lines.push(
-      "If one of those areas surprised you, reply and tell me which one. I read every reply myself.",
-      "",
-    );
-  }
-
-  lines.push("Glenda");
   return lines.join("\n");
 }

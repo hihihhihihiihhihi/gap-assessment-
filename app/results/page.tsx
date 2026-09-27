@@ -21,6 +21,34 @@ export default async function ResultsPage() {
   const gapMap = await getGapMapByAudit(audit.id);
   if (!gapMap) redirect("/api/audit/start");
 
+  // The Gap Map is the lead magnet: it opens once she leaves her address.
+  if (!audit.email) {
+    const widest = gapMap.ranked_areas[0];
+    return (
+      <div className="max-w-xl">
+        <header className="mb-6">
+          <p className="text-xs font-medium uppercase tracking-[0.15em] text-amber-700">
+            All six areas done
+          </p>
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-neutral-900">
+            Your Gap Map is ready.
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+            Six areas, ranked, with the zones that are running on fight/flight
+            and the ones running without you noticing.
+            {widest
+              ? " Your widest gap is already sitting at the top of it."
+              : ""}
+          </p>
+        </header>
+        <EmailCapture initialEmail={null} variant="unlock" />
+        <p className="mt-4 text-xs text-neutral-500">
+          Your answers are already saved. Nothing is shared with anyone.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <header className="mb-6">

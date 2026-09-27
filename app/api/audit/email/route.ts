@@ -55,9 +55,13 @@ export async function POST(request: NextRequest) {
       return ok({ saved: true, emailed: false });
     }
 
+    // Set CTA_URL once the Theta Collective page is live; until then the
+    // email closes on a reply request rather than a dead link.
+    const ctaUrl = process.env.CTA_URL || undefined;
     const payload = {
       areas: gapMap.ranked_areas,
       totalGap: Number(gapMap.total_gap),
+      ctaUrl,
     };
     const result = await sendEmail({
       to: email,

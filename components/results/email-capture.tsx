@@ -1,13 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { validEmail } from "@/lib/scoring/gap-calculator";
 
 export default function EmailCapture({
   initialEmail,
+  variant = "confirm",
 }: {
   initialEmail: string | null;
+  /** "unlock" gates the Gap Map behind the address; "confirm" sits under it. */
+  variant?: "unlock" | "confirm";
 }) {
+  const router = useRouter();
   const [email, setEmail] = useState(initialEmail ?? "");
   const [saved, setSaved] = useState(Boolean(initialEmail));
   const [emailed, setEmailed] = useState(false);
@@ -36,6 +41,8 @@ export default function EmailCapture({
       if (!res.ok) throw new Error(data.reason ?? "We couldn't save that.");
       setEmailed(Boolean(data.emailed));
       setSaved(true);
+      // Unlocks the Gap Map: the server re-reads the audit and renders it.
+      if (variant === "unlock") router.refresh();
     } catch (err) {
       setError(
         err instanceof Error && err.message !== "Failed to fetch"
@@ -84,10 +91,14 @@ export default function EmailCapture({
       noValidate
     >
       <label htmlFor="email" className="text-sm font-semibold text-neutral-900">
-        Leave your email to keep your Gap Map
+        {variant === "unlock"
+          ? "Your Gap Map is ready. Tell me where to send it."
+          : "Leave your email to keep your Gap Map"}
       </label>
       <p className="mt-1 text-xs text-neutral-500">
-        So you can come back to it — not a newsletter signup.
+        {variant === "unlock"
+          ? "Your results open on the next screen and land in your inbox. Not a newsletter signup."
+          : "So you can come back to it. Not a newsletter signup."}
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <input
@@ -109,7 +120,11 @@ export default function EmailCapture({
           disabled={saving}
           className="rounded-lg bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:bg-stone-300"
         >
-          {saving ? "Saving…" : "Keep my Gap Map"}
+          {saving
+            ? "Sending…"
+            : variant === "unlock"
+              ? "Show my Gap Map"
+              : "Keep my Gap Map"}
         </button>
       </div>
       {error && (
