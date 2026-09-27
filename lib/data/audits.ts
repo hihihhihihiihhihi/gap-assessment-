@@ -6,8 +6,13 @@ export interface Audit {
   status: "in_progress" | "completed";
   email: string | null;
   completed_at: string | null;
+  /** Present only once supabase/migrations/0003_results_sent.sql is applied. */
+  results_sent_at?: string | null;
 }
 
+// results_sent_at is deliberately not selected: PostgREST rejects the whole
+// query with a 400 if the column does not exist yet, which would take down
+// every page until 0003 is applied.
 const AUDIT_FIELDS = "id, session_token, status, email, completed_at";
 
 export async function createAudit(sessionToken: string): Promise<Audit> {
@@ -69,4 +74,17 @@ export async function saveAuditEmail(
     .update({ email })
     .eq("id", id);
   if (error) throw new Error(`Could not save the email: ${error.message}`);
+}
+
+/** Stamped once the results email is accepted by the provider. */
+export async function markResultsSent(id: string): Promise<void> {
+  const supabase = createDbClient();
+  const { error } = await supabase
+    .from("audits")
+    .update({ results_sent_at: new Date().toISOString() })
+    .eq("id", id);
+  // A failed stamp must not fail the request: she already has her email.
+  if (error) {
+    console.error("[audits] could not stamp results_sent_at:", error.message);
+  }
 }

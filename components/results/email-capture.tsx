@@ -10,6 +10,7 @@ export default function EmailCapture({
 }) {
   const [email, setEmail] = useState(initialEmail ?? "");
   const [saved, setSaved] = useState(Boolean(initialEmail));
+  const [emailed, setEmailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ export default function EmailCapture({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.reason ?? "We couldn't save that.");
+      setEmailed(Boolean(data.emailed));
       setSaved(true);
     } catch (err) {
       setError(
@@ -48,10 +50,21 @@ export default function EmailCapture({
   if (saved) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm">
-        <p className="font-semibold text-emerald-900">Your Gap Map is kept.</p>
+        <p className="font-semibold text-emerald-900">
+          {emailed ? "Your Gap Map is on its way." : "Your Gap Map is kept."}
+        </p>
         <p className="mt-1 text-emerald-800">
-          We&apos;ve saved it to <strong>{email}</strong>. Nothing else happens
-          without your say-so.
+          {emailed ? (
+            <>
+              Sent to <strong>{email}</strong>. If it isn&apos;t there in a few
+              minutes, check your spam folder.
+            </>
+          ) : (
+            <>
+              Saved to <strong>{email}</strong>. Nothing else happens without
+              your say-so.
+            </>
+          )}
         </p>
         <button
           type="button"
