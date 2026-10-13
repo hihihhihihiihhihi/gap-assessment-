@@ -126,7 +126,8 @@
   }
   .scale label:hover { border-color: var(--teal-soft); color: var(--teal); }
   .scale input { display: none; }
- .scale label:has(input:checked),
+/* Fix selected quiz answer highlighting */
+.scale label:has(input:checked),
 .scale label.checked {
   background: var(--teal);
   color: var(--cream);
