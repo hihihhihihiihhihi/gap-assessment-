@@ -36,3 +36,4 @@
 - Email capture component and v1 MVP checklist are marked complete.
 - Gap Map is now automatically emailed to the user when they provide their email address.
 - After email is submitted, it receives a next-step action (the emailed gap map itself serves as that next step).
+- Form endpoint in gap-audit.html was updated (minor maintenance).
