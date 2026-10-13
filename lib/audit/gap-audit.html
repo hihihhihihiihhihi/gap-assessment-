@@ -126,12 +126,12 @@
   }
   .scale label:hover { border-color: var(--teal-soft); color: var(--teal); }
   .scale input { display: none; }
-  .scale input:checked + label,
-  .scale label.checked {
-    background: var(--teal);
-    color: var(--cream);
-    border-color: var(--teal);
-  }
+ .scale label:has(input:checked),
+.scale label.checked {
+  background: var(--teal);
+  color: var(--cream);
+  border-color: var(--teal);
+}
   .scale-num {
     display: block;
     font-family: 'Playfair Display', serif;
